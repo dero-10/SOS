@@ -35,7 +35,7 @@ Score per criterion is 1–4; criterion value = weight × score ÷ 4. Syllabus r
 | D3 | Menu & navigation | 7 | Bottom bar to every screen; correct back stack; state survives rotation | ✅ Done | `ui/navigation/SosNavHost.kt` |
 | D4 | Profile | 7 | Shows logged-in user data; editable and saved; logout button | ✅ Done | `ui/profile/*` |
 | D5 | CRUD module with Room | 10 | Full create/read/update/delete; form validation; persists; delete confirmation | ✅ Done (Requests) | `ui/request/*`, `ui/explore/*`, `data/local/*` |
-| D6 | Architecture & code quality | 5 | Consistent MVVM + Repository; UI never touches DAO; tidy Git commits | ✅ Code done — **commits still pending** | whole project |
+| D6 | Architecture & code quality | 5 | Consistent MVVM + Repository; UI never touches DAO; tidy Git commits | ✅ Done | whole project |
 
 ### How each criterion is met
 
@@ -85,7 +85,7 @@ Android SDK path is in `local.properties`. Emulator AVD `Pixel_8` exists; if it 
 - 2026-10-07 — Started as static Login/Main Menu/Dashboard UI. Added Room, MVVM, Navigation Compose, Profile, and a generic Tasks CRUD.
 - 2026-10-07 — Switched to the Figma design (user's screenshots). Tasks → **Requests**; Home/Explore/Profile restyled; Add Request Details form built from Figma. Scope limited to the rubric on purpose ("build sampai tahap rubrik dulu").
 - 2026-10-07 — Verified on emulator: login validation + wrong password, Home stats, Explore list, form validation, create (Tomorrow → Urgent badge), edit (deadline change), delete with confirm, profile edit + save, logout with confirm, Back after logout stays on Login, session kept after reinstall.
-- Changes are **not committed yet**.
+- 2026-10-07 — Committed in 7 commits and pushed to https://github.com/dero-10/SOS (main).
 
 ## Next phase (from Figma, not built yet)
 
@@ -96,4 +96,4 @@ Android SDK path is in `local.properties`. Emulator AVD `Pixel_8` exists; if it 
 - [ ] **Recent** tab (history of the user's requests/helps).
 - [ ] Profile: Withdraw / Buy Credits (currently "coming soon" snackbars), LinkedIn link, Language and Display settings.
 - [ ] Inter font; request image upload/preview.
-- [ ] Commit in small meaningful commits (rubric D6).
+- [x] Commit in small meaningful commits (rubric D6).
