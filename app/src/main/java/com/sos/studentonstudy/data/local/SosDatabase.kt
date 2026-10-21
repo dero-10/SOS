@@ -5,10 +5,24 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [UserEntity::class, RequestEntity::class], version = 2, exportSchema = false)
+@Database(
+    entities = [
+        UserEntity::class,
+        RequestEntity::class,
+        HelperEntity::class,
+        HelpHistoryEntity::class,
+        ReplyEntity::class,
+        ChatMessageEntity::class
+    ],
+    version = 3,
+    exportSchema = false
+)
 abstract class SosDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun requestDao(): RequestDao
+    abstract fun helperDao(): HelperDao
+    abstract fun replyDao(): ReplyDao
+    abstract fun chatDao(): ChatDao
 
     companion object {
         fun create(context: Context): SosDatabase =
