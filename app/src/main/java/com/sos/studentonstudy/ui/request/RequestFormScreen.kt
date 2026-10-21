@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,6 +27,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.PictureAsPdf
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.CircularProgressIndicator
@@ -43,16 +45,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 import com.sos.studentonstudy.data.local.EstimatedTime
 import com.sos.studentonstudy.data.local.RequestTags
 import com.sos.studentonstudy.ui.BackTopBar
@@ -82,7 +88,15 @@ fun RequestFormScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
     var timeMenuOpen by rememberSaveable { mutableStateOf(false) }
-    val pickFile = rememberAttachmentPicker(viewModel::onAttachmentChange)
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val pickFile = rememberAttachmentPicker { file ->
+        scope.launch {
+            // Pictures are copied into app storage so the request keeps showing them later.
+            val image = if (file.mimeType?.startsWith("image/") == true) ImageStore.import(context, file.uri, file.mimeType) else null
+            viewModel.onAttachmentChange(file.name, image)
+        }
+    }
     LaunchedEffect(state.finished) { if (state.finished) onDone() }
     LaunchedEffect(state.sentToHelperId) { state.sentToHelperId?.let(onSent) }
 
@@ -131,17 +145,22 @@ fun RequestFormScreen(
             } else {
                 GrayBox(onClick = pickFile) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 14.dp)) {
-                        Icon(Icons.Outlined.PictureAsPdf, contentDescription = null, tint = SosText)
+                        Icon(if (state.imagePath != null) Icons.Outlined.Image else Icons.Outlined.PictureAsPdf, contentDescription = null, tint = SosText)
                         Spacer(Modifier.width(12.dp))
                         Text(attachment, color = SosText, fontSize = 14.sp, modifier = Modifier.weight(1f), maxLines = 1)
                         Icon(
                             Icons.Rounded.Close,
                             contentDescription = "Remove attachment",
                             tint = SosMuted,
-                            modifier = Modifier.clickable { viewModel.onAttachmentChange(null) }
+                            modifier = Modifier.clickable { viewModel.onAttachmentChange(null, null) }
                         )
                     }
                 }
+            }
+
+            state.imagePath?.let {
+                Spacer(Modifier.height(12.dp))
+                RequestImage(it, Modifier.fillMaxWidth().aspectRatio(16f / 9f).clip(RoundedCornerShape(8.dp)))
             }
 
             Spacer(Modifier.height(28.dp))

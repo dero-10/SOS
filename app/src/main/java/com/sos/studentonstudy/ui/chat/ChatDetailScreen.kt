@@ -57,7 +57,7 @@ fun ChatDetailScreen(
     viewModel: ChatDetailViewModel = viewModel(factory = SosViewModelFactory)
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val pickFile = rememberAttachmentPicker(viewModel::onAttachmentChange)
+    val pickFile = rememberAttachmentPicker { viewModel.onAttachmentChange(it.name) }
     val listState = rememberLazyListState()
     // The list is reversed (index 0 is the newest message), so scrolling to 0 shows the latest bubble.
     LaunchedEffect(state.messages.size) { listState.scrollToItem(0) }

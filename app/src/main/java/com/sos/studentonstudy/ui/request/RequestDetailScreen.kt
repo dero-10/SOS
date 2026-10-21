@@ -27,7 +27,6 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Event
-import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.Savings
 import androidx.compose.material.icons.outlined.Schedule
@@ -41,7 +40,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -85,7 +83,7 @@ fun RequestDetailScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val item = state.item
-    val pickFile = rememberAttachmentPicker(viewModel::onAttachmentChange)
+    val pickFile = rememberAttachmentPicker { viewModel.onAttachmentChange(it.name) }
 
     // The request was deleted (from the edit form), so there is nothing left to show.
     LaunchedEffect(state.loading, item == null) { if (!state.loading && item == null) onBack() }
@@ -179,8 +177,9 @@ private fun RequestDetailCard(item: RequestWithMeta, showAuthor: Boolean) {
             Spacer(Modifier.height(12.dp))
             Text(request.details, color = SosText, fontSize = 14.sp)
             Spacer(Modifier.height(12.dp))
-            ImagePlaceholder()
-            request.attachmentName?.let {
+            RequestImage(request.imagePath, Modifier.fillMaxWidth().aspectRatio(1f))
+            // A picture attachment is already shown above, so only other files get a chip.
+            request.attachmentName?.takeIf { request.imagePath == null }?.let {
                 Spacer(Modifier.height(12.dp))
                 AttachmentChip(it)
             }
@@ -195,17 +194,6 @@ private fun RequestDetailCard(item: RequestWithMeta, showAuthor: Boolean) {
                 }
             }
         }
-    }
-}
-
-/** The gray picture box Figma shows under the description. */
-@Composable
-private fun ImagePlaceholder() {
-    Box(
-        modifier = Modifier.fillMaxWidth().aspectRatio(1f).background(Color(0xFFE0E0E0)),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(Icons.Outlined.Image, contentDescription = null, tint = Color(0xFF1F1F1F), modifier = Modifier.size(150.dp))
     }
 }
 

@@ -8,12 +8,15 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
-/** Returns a function that opens the system file picker and reports the chosen file's display name. */
+/** A file chosen in the system picker. */
+internal class PickedFile(val name: String, val uri: Uri, val mimeType: String?)
+
+/** Returns a function that opens the system file picker and reports the chosen file. */
 @Composable
-internal fun rememberAttachmentPicker(onPicked: (String) -> Unit): () -> Unit {
+internal fun rememberAttachmentPicker(onPicked: (PickedFile) -> Unit): () -> Unit {
     val context = LocalContext.current
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri?.let { onPicked(context.displayName(it)) }
+        uri?.let { onPicked(PickedFile(context.displayName(it), it, context.contentResolver.getType(it))) }
     }
     return { launcher.launch("*/*") }
 }

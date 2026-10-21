@@ -52,6 +52,8 @@ data class RequestEntity(
     val deadline: Long,
     val budget: Long,
     val attachmentName: String? = null,
+    /** Path of the request's picture in app-private storage, when the attachment was an image. */
+    val imagePath: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
     /** Set when the request was sent privately to one helper via chat; such requests stay out of the Explore feed. */
     val helperId: Long? = null

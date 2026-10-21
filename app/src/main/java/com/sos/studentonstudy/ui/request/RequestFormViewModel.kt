@@ -31,6 +31,7 @@ data class RequestFormUiState(
     val title: String = "",
     val details: String = "",
     val attachmentName: String? = null,
+    val imagePath: String? = null,
     val estimatedTime: Int = EstimatedTime.FAST,
     val deadline: Long? = null,
     val deadlineOption: DeadlineOption? = null,
@@ -76,6 +77,7 @@ class RequestFormViewModel(
                         title = request.title,
                         details = request.details,
                         attachmentName = request.attachmentName,
+                        imagePath = request.imagePath,
                         estimatedTime = request.estimatedTime,
                         deadline = request.deadline,
                         deadlineOption = DeadlineOption.entries.firstOrNull { o -> o.days != null && daysFromToday(o.days) == request.deadline }
@@ -91,7 +93,8 @@ class RequestFormViewModel(
 
     fun onTitleChange(value: String) = _uiState.update { it.copy(title = value.take(TITLE_MAX), titleError = null) }
     fun onDetailsChange(value: String) = _uiState.update { it.copy(details = value.take(DETAILS_MAX), detailsError = null) }
-    fun onAttachmentChange(name: String?) = _uiState.update { it.copy(attachmentName = name) }
+    /** [imagePath] is set when the attachment is a picture that was copied into app storage. */
+    fun onAttachmentChange(name: String?, imagePath: String? = null) = _uiState.update { it.copy(attachmentName = name, imagePath = imagePath) }
     fun onEstimatedTimeChange(value: Int) = _uiState.update { it.copy(estimatedTime = value) }
 
     fun onDeadlineOption(option: DeadlineOption) {
@@ -145,6 +148,7 @@ class RequestFormViewModel(
                 title = if (helperId != null) state.details.trim().replace(WHITESPACE, " ").take(TITLE_MAX) else state.title.trim(),
                 details = state.details.trim(),
                 attachmentName = state.attachmentName,
+                imagePath = state.imagePath,
                 estimatedTime = state.estimatedTime,
                 deadline = state.deadline!!,
                 budget = state.budget,
