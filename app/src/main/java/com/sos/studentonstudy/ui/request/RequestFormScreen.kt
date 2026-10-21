@@ -76,6 +76,7 @@ import com.sos.studentonstudy.ui.rememberAttachmentPicker
 @Composable
 fun RequestFormScreen(
     onDone: () -> Unit,
+    onSent: (Long) -> Unit,
     viewModel: RequestFormViewModel = viewModel(factory = SosViewModelFactory)
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -83,6 +84,7 @@ fun RequestFormScreen(
     var timeMenuOpen by rememberSaveable { mutableStateOf(false) }
     val pickFile = rememberAttachmentPicker(viewModel::onAttachmentChange)
     LaunchedEffect(state.finished) { if (state.finished) onDone() }
+    LaunchedEffect(state.sentToHelperId) { state.sentToHelperId?.let(onSent) }
 
     Column(modifier = Modifier.fillMaxSize().imePadding()) {
         BackTopBar(title = if (state.isEdit) "Edit Request" else "Add Request Details", onBack = onDone) {
@@ -99,15 +101,17 @@ fun RequestFormScreen(
         Column(
             modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 32.dp, vertical = 8.dp)
         ) {
-            SosTextField(
-                label = "Title",
-                value = state.title,
-                onValueChange = viewModel::onTitleChange,
-                placeholder = "Input title",
-                error = state.titleError,
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
-            )
-            Spacer(Modifier.height(20.dp))
+            if (!state.isDirect) {
+                SosTextField(
+                    label = "Title",
+                    value = state.title,
+                    onValueChange = viewModel::onTitleChange,
+                    placeholder = "Input title",
+                    error = state.titleError,
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
+                )
+                Spacer(Modifier.height(20.dp))
+            }
             SosTextField(
                 label = "Request details",
                 value = state.details,
@@ -184,15 +188,17 @@ fun RequestFormScreen(
             }
             state.deadlineError?.let { FieldError(it) }
 
-            Spacer(Modifier.height(28.dp))
-            Text("Tags", color = SosText, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(12.dp))
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                RequestTags.all.forEach { tag ->
-                    TagChip(text = tag, selected = tag in state.tags, fontSize = 14, onClick = { viewModel.toggleTag(tag) })
+            if (!state.isDirect) {
+                Spacer(Modifier.height(28.dp))
+                Text("Tags", color = SosText, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.height(12.dp))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    RequestTags.all.forEach { tag ->
+                        TagChip(text = tag, selected = tag in state.tags, fontSize = 14, onClick = { viewModel.toggleTag(tag) })
+                    }
                 }
+                state.tagsError?.let { FieldError(it) }
             }
-            state.tagsError?.let { FieldError(it) }
 
             Spacer(Modifier.height(28.dp))
             Text("Budget", color = SosText, fontSize = 16.sp)

@@ -8,6 +8,7 @@ import com.sos.studentonstudy.data.local.RequestEntity
 import com.sos.studentonstudy.data.local.RequestTags
 import com.sos.studentonstudy.data.local.tagList
 import com.sos.studentonstudy.data.repository.AuthRepository
+import com.sos.studentonstudy.data.repository.ChatRepository
 import com.sos.studentonstudy.data.repository.RequestRepository
 import com.sos.studentonstudy.ui.daysFromToday
 import com.sos.studentonstudy.ui.formatIdr
@@ -25,6 +26,8 @@ enum class DeadlineOption(val label: String, val days: Int?) {
 
 data class RequestFormUiState(
     val isEdit: Boolean = false,
+    /** True when the request is being sent privately to one helper (no title or tags, as in Figma). */
+    val isDirect: Boolean = false,
     val title: String = "",
     val details: String = "",
     val attachmentName: String? = null,
@@ -40,18 +43,26 @@ data class RequestFormUiState(
     val budgetError: String? = null,
     val confirmDelete: Boolean = false,
     val loading: Boolean = false,
-    val finished: Boolean = false
+    val finished: Boolean = false,
+    /** Set once a direct request was sent, so the screen can open that helper's chat. */
+    val sentToHelperId: Long? = null
 )
 
 class RequestFormViewModel(
     savedStateHandle: SavedStateHandle,
     private val repository: RequestRepository,
-    private val auth: AuthRepository
+    private val auth: AuthRepository,
+    private val chat: ChatRepository
 ) : ViewModel() {
     private val requestId: Long = savedStateHandle.get<Long>(REQUEST_ID_ARG) ?: NEW_REQUEST_ID
+    private val helperId: Long? = savedStateHandle.get<Long>(HELPER_ID_ARG)?.takeIf { it != NO_HELPER }
     private var original: RequestEntity? = null
 
-    private val _uiState = MutableStateFlow(RequestFormUiState(isEdit = requestId != NEW_REQUEST_ID, loading = requestId != NEW_REQUEST_ID))
+    private val _uiState = MutableStateFlow(RequestFormUiState(
+        isEdit = requestId != NEW_REQUEST_ID,
+        isDirect = helperId != null,
+        loading = requestId != NEW_REQUEST_ID
+    ))
     val uiState: StateFlow<RequestFormUiState> = _uiState.asStateFlow()
 
     init {
@@ -109,6 +120,7 @@ class RequestFormViewModel(
         viewModelScope.launch {
             val balance = auth.currentUser.first()?.balance ?: 0L
             val titleError = when {
+                helperId != null -> null
                 state.title.isBlank() -> "Title is required"
                 state.title.trim().length < 5 -> "Title must be at least 5 characters"
                 else -> null
@@ -119,7 +131,7 @@ class RequestFormViewModel(
                 else -> null
             }
             val deadlineError = if (state.deadline == null) "Choose a deadline" else null
-            val tagsError = if (state.tags.isEmpty()) "Pick at least one tag" else null
+            val tagsError = if (helperId == null && state.tags.isEmpty()) "Pick at least one tag" else null
             val budgetError = if (state.budget > balance) "Budget is higher than your balance (${formatIdr(balance)})" else null
             if (listOf(titleError, detailsError, deadlineError, tagsError, budgetError).any { it != null }) {
                 _uiState.update {
@@ -128,19 +140,24 @@ class RequestFormViewModel(
                 return@launch
             }
             val base = original ?: RequestEntity(userId = 0, title = "", details = "", tags = "", estimatedTime = 0, deadline = 0, budget = 0)
-            repository.save(
-                base.copy(
-                    title = state.title.trim(),
-                    details = state.details.trim(),
-                    attachmentName = state.attachmentName,
-                    estimatedTime = state.estimatedTime,
-                    deadline = state.deadline!!,
-                    budget = state.budget,
-                    // Keep the Figma tag order rather than the order the user tapped them.
-                    tags = RequestTags.all.filter { it in state.tags }.joinToString(",")
-                )
+            val request = base.copy(
+                // The Figma "send to helper" form has no title, so the details' first words stand in for it.
+                title = if (helperId != null) state.details.trim().replace(WHITESPACE, " ").take(TITLE_MAX) else state.title.trim(),
+                details = state.details.trim(),
+                attachmentName = state.attachmentName,
+                estimatedTime = state.estimatedTime,
+                deadline = state.deadline!!,
+                budget = state.budget,
+                // Keep the Figma tag order rather than the order the user tapped them.
+                tags = RequestTags.all.filter { it in state.tags }.joinToString(",")
             )
-            _uiState.update { it.copy(finished = true) }
+            if (helperId != null) {
+                chat.sendRequest(helperId, request)
+                _uiState.update { it.copy(sentToHelperId = helperId) }
+            } else {
+                repository.save(request)
+                _uiState.update { it.copy(finished = true) }
+            }
         }
     }
 
@@ -161,6 +178,7 @@ class RequestFormViewModel(
         const val DEFAULT_BUDGET = 50_000L
         private const val BUDGET_STEP = 5_000L
         private const val TITLE_MAX = 60
+        private val WHITESPACE = Regex("\\s+")
         private const val DETAILS_MAX = 500
     }
 }

@@ -30,6 +30,9 @@ import com.sos.studentonstudy.ui.SosBackground
 import com.sos.studentonstudy.ui.SosBottomBar
 import com.sos.studentonstudy.ui.auth.LoginScreen
 import com.sos.studentonstudy.ui.auth.RegisterScreen
+import com.sos.studentonstudy.ui.chat.ChatDetailScreen
+import com.sos.studentonstudy.ui.chat.ChatDetailViewModel
+import com.sos.studentonstudy.ui.chat.ChatListScreen
 import com.sos.studentonstudy.ui.dashboard.DashboardScreen
 import com.sos.studentonstudy.ui.explore.ExploreScreen
 import com.sos.studentonstudy.ui.helper.HelperProfileScreen
@@ -50,11 +53,14 @@ object Routes {
     const val PROFILE = "profile"
     const val REQUEST_FORM = "request_form?${RequestFormViewModel.REQUEST_ID_ARG}={${RequestFormViewModel.REQUEST_ID_ARG}}" +
         "&${RequestFormViewModel.HELPER_ID_ARG}={${RequestFormViewModel.HELPER_ID_ARG}}"
+    const val CHAT_DETAIL = "chat/{${ChatDetailViewModel.HELPER_ID_ARG}}"
     const val REQUEST_DETAIL = "request_detail/{${RequestDetailViewModel.REQUEST_ID_ARG}}"
     const val HELPER_PROFILE = "helper_profile/{${HelperProfileViewModel.HELPER_ID_ARG}}"
 
     fun requestForm(requestId: Long = RequestFormViewModel.NEW_REQUEST_ID, helperId: Long = RequestFormViewModel.NO_HELPER) =
         "request_form?${RequestFormViewModel.REQUEST_ID_ARG}=$requestId&${RequestFormViewModel.HELPER_ID_ARG}=$helperId"
+
+    fun chatDetail(helperId: Long) = "chat/$helperId"
 
     fun requestDetail(requestId: Long) = "request_detail/$requestId"
 
@@ -155,12 +161,28 @@ fun SosNavHost(isLoggedIn: Boolean, navController: NavHostController = rememberN
                         }
                     )
                 ) { entry ->
-                    RequestFormScreen(onDone = {
-                        // Guard against a double pop when save and back fire together.
-                        if (navController.currentBackStackEntry == entry) navController.popBackStack()
-                    })
+                    RequestFormScreen(
+                        onDone = {
+                            // Guard against a double pop when save and back fire together.
+                            if (navController.currentBackStackEntry == entry) navController.popBackStack()
+                        },
+                        onSent = { helperId ->
+                            // The form is replaced by the chat, so Back from the chat returns to the helper profile.
+                            navController.navigate(Routes.chatDetail(helperId)) {
+                                popUpTo(Routes.REQUEST_FORM) { inclusive = true }
+                            }
+                        }
+                    )
                 }
-                composable(Routes.CHAT) { EmptyState("Chat", "Conversations will appear here.") }
+                composable(Routes.CHAT) {
+                    ChatListScreen(onOpenChat = { navController.navigate(Routes.chatDetail(it)) })
+                }
+                composable(
+                    Routes.CHAT_DETAIL,
+                    arguments = listOf(navArgument(ChatDetailViewModel.HELPER_ID_ARG) { type = NavType.LongType })
+                ) { entry ->
+                    ChatDetailScreen(onBack = { if (navController.currentBackStackEntry == entry) navController.popBackStack() })
+                }
                 composable(Routes.RECENT) { EmptyState("Recent", "Your recent activity will appear here.") }
                 composable(Routes.PROFILE) {
                     ProfileScreen(onLoggedOut = { navController.leaveApp() })

@@ -9,6 +9,8 @@ import com.sos.studentonstudy.AppContainer
 import com.sos.studentonstudy.SosApplication
 import com.sos.studentonstudy.ui.auth.LoginViewModel
 import com.sos.studentonstudy.ui.auth.RegisterViewModel
+import com.sos.studentonstudy.ui.chat.ChatDetailViewModel
+import com.sos.studentonstudy.ui.chat.ChatListViewModel
 import com.sos.studentonstudy.ui.dashboard.DashboardViewModel
 import com.sos.studentonstudy.ui.explore.ExploreViewModel
 import com.sos.studentonstudy.ui.helper.HelperProfileViewModel
@@ -22,7 +24,9 @@ val SosViewModelFactory = viewModelFactory {
     initializer { RegisterViewModel(container().authRepository) }
     initializer { DashboardViewModel(container().authRepository, container().requestRepository) }
     initializer { ExploreViewModel(container().requestRepository, container().helperRepository) }
-    initializer { RequestFormViewModel(createSavedStateHandle(), container().requestRepository, container().authRepository) }
+    initializer { RequestFormViewModel(createSavedStateHandle(), container().requestRepository, container().authRepository, container().chatRepository) }
+    initializer { ChatListViewModel(container().chatRepository) }
+    initializer { ChatDetailViewModel(createSavedStateHandle(), container().chatRepository, container().helperRepository) }
     initializer { RequestDetailViewModel(createSavedStateHandle(), container().requestRepository, container().replyRepository) }
     initializer { HelperProfileViewModel(createSavedStateHandle(), container().helperRepository) }
     initializer { ProfileViewModel(container().authRepository) }
