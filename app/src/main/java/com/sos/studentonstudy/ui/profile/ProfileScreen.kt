@@ -25,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.AccountBalance
 import androidx.compose.material.icons.outlined.Language
+import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.Payments
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PhoneAndroid
@@ -44,8 +45,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,6 +58,7 @@ import com.sos.studentonstudy.data.local.UserEntity
 import com.sos.studentonstudy.ui.BackTopBar
 import com.sos.studentonstudy.ui.ConfirmDialog
 import com.sos.studentonstudy.ui.InitialAvatar
+import com.sos.studentonstudy.ui.LinkedInBadge
 import com.sos.studentonstudy.ui.SosButton
 import com.sos.studentonstudy.ui.SosMuted
 import com.sos.studentonstudy.ui.SosPurple
@@ -87,7 +91,9 @@ fun ProfileScreen(
             ProfileContent(
                 user = state.user,
                 onEdit = viewModel::startEditing,
-                onComingSoon = { viewModel.showMessage("$it is coming soon") },
+                onNoLinkedin = { viewModel.showMessage("Add your LinkedIn link in Edit Profile") },
+                onBalanceAction = viewModel::openBalanceDialog,
+                onSetting = viewModel::openSettingDialog,
                 onLogout = viewModel::requestLogout
             )
         } else {
@@ -95,6 +101,11 @@ fun ProfileScreen(
         }
         SnackbarHost(snackbarHostState, modifier = Modifier.align(Alignment.BottomCenter))
     }
+
+    state.balanceDialog?.let { dialog ->
+        BalanceAmountDialog(dialog, viewModel::onAmountChange, viewModel::confirmBalance, viewModel::dismissBalanceDialog)
+    }
+    state.settingDialog?.let { SettingInfoDialog(it, viewModel::dismissSettingDialog) }
 
     if (state.confirmLogout) {
         ConfirmDialog(
@@ -111,7 +122,15 @@ fun ProfileScreen(
 }
 
 @Composable
-private fun ProfileContent(user: UserEntity?, onEdit: () -> Unit, onComingSoon: (String) -> Unit, onLogout: () -> Unit) {
+private fun ProfileContent(
+    user: UserEntity?,
+    onEdit: () -> Unit,
+    onNoLinkedin: () -> Unit,
+    onBalanceAction: (BalanceAction) -> Unit,
+    onSetting: (SettingDialog) -> Unit,
+    onLogout: () -> Unit
+) {
+    val uriHandler = LocalUriHandler.current
     Box(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         // White sheet behind the content, starting halfway down the avatar like the Figma frame.
         Box(
@@ -126,7 +145,26 @@ private fun ProfileContent(user: UserEntity?, onEdit: () -> Unit, onComingSoon: 
                 InitialAvatar(user?.name.orEmpty(), 80.dp)
                 Spacer(Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(user?.name.orEmpty(), color = SosText, fontSize = 24.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            user?.name.orEmpty(),
+                            color = SosText,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false)
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        LinkedInBadge(
+                            size = 24.dp,
+                            modifier = Modifier.clickable {
+                                val url = user?.linkedinUrl.orEmpty()
+                                // Fails only when no browser is installed; there is nothing useful to show then.
+                                if (url.isBlank()) onNoLinkedin() else runCatching { uriHandler.openUri(url) }
+                            }
+                        )
+                    }
                     Text(user?.email.orEmpty(), color = SosText, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     val education = listOf(user?.major.orEmpty(), user?.university.orEmpty()).filter { it.isNotBlank() }.joinToString(", ")
                     if (education.isNotEmpty()) Text(education, color = SosText, fontSize = 9.sp)
@@ -154,15 +192,15 @@ private fun ProfileContent(user: UserEntity?, onEdit: () -> Unit, onComingSoon: 
                     Text(formatIdr(user?.balance ?: 0), color = SosText, fontSize = 36.sp, fontWeight = FontWeight.Bold)
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        BalanceButton("Withdraw", Icons.Outlined.AccountBalance, Modifier.weight(1f)) { onComingSoon("Withdraw") }
-                        BalanceButton("Buy Credits", Icons.Outlined.Payments, Modifier.weight(1f)) { onComingSoon("Buy Credits") }
+                        BalanceButton("Withdraw", Icons.Outlined.AccountBalance, Modifier.weight(1f)) { onBalanceAction(BalanceAction.Withdraw) }
+                        BalanceButton("Buy Credits", Icons.Outlined.Payments, Modifier.weight(1f)) { onBalanceAction(BalanceAction.BuyCredits) }
                     }
                 }
             }
             Spacer(Modifier.height(40.dp))
             Column(modifier = Modifier.padding(horizontal = 14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                SettingRow(Icons.Outlined.Language, "Language", "English") { onComingSoon("Language settings") }
-                SettingRow(Icons.Outlined.PhoneAndroid, "Display", "Light mode") { onComingSoon("Display settings") }
+                SettingRow(Icons.Outlined.Language, "Language", "English") { onSetting(SettingDialog.Language) }
+                SettingRow(Icons.Outlined.PhoneAndroid, "Display", "Light mode") { onSetting(SettingDialog.Display) }
                 SettingRow(Icons.AutoMirrored.Outlined.Logout, "Logout", null, onLogout)
             }
             Spacer(Modifier.height(24.dp))
@@ -235,6 +273,15 @@ private fun EditProfileContent(form: ProfileForm, viewModel: ProfileViewModel) {
                 placeholder = "e.g. Universitas Pelita Harapan",
                 leadingIcon = Icons.Outlined.AccountBalance,
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+            )
+            SosTextField(
+                label = "LinkedIn",
+                value = form.linkedin,
+                onValueChange = viewModel::onLinkedinChange,
+                placeholder = "linkedin.com/in/yourname",
+                error = form.linkedinError,
+                leadingIcon = Icons.Outlined.Link,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri)
             )
         }
         SosButton("Save", viewModel::save, modifier = Modifier.padding(horizontal = 40.dp, vertical = 20.dp))

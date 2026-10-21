@@ -19,8 +19,12 @@ interface UserDao {
     @Query("SELECT * FROM users WHERE id = :id")
     fun observe(id: Long): Flow<UserEntity?>
 
-    @Query("UPDATE users SET name = :name, major = :major, university = :university WHERE id = :id")
-    suspend fun updateProfile(id: Long, name: String, major: String, university: String)
+    @Query("UPDATE users SET name = :name, major = :major, university = :university, linkedinUrl = :linkedinUrl WHERE id = :id")
+    suspend fun updateProfile(id: Long, name: String, major: String, university: String, linkedinUrl: String)
+
+    /** Adds [delta] (negative to subtract) to the balance; returns 0 rows when that would go below zero. */
+    @Query("UPDATE users SET balance = balance + :delta WHERE id = :id AND balance + :delta >= 0")
+    suspend fun adjustBalance(id: Long, delta: Long): Int
 
     @Query("SELECT COUNT(*) FROM users")
     suspend fun count(): Int

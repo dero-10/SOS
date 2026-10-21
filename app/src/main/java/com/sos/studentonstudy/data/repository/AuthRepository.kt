@@ -34,9 +34,20 @@ class AuthRepository(private val userDao: UserDao, private val session: SessionM
         return AuthResult.Success
     }
 
-    suspend fun updateProfile(name: String, major: String, university: String) {
+    suspend fun updateProfile(name: String, major: String, university: String, linkedinUrl: String) {
         val id = session.userId.value ?: return
-        userDao.updateProfile(id, name.trim(), major.trim(), university.trim())
+        userDao.updateProfile(id, name.trim(), major.trim(), university.trim(), linkedinUrl.trim())
+    }
+
+    /** Adds credits to the balance (simulated purchase, there is no payment backend). */
+    suspend fun topUp(amount: Long): Boolean = adjustBalance(amount)
+
+    /** Removes [amount] from the balance; false when the balance is too low. */
+    suspend fun withdraw(amount: Long): Boolean = adjustBalance(-amount)
+
+    private suspend fun adjustBalance(delta: Long): Boolean {
+        val id = session.userId.value ?: return false
+        return userDao.adjustBalance(id, delta) > 0
     }
 
     fun logout() = session.clear()
