@@ -49,12 +49,14 @@ import com.sos.studentonstudy.ui.SosSearchBar
 import com.sos.studentonstudy.ui.SosText
 import com.sos.studentonstudy.ui.SosViewModelFactory
 import com.sos.studentonstudy.ui.TagChip
+import com.sos.studentonstudy.ui.helper.HelperCard
 import com.sos.studentonstudy.ui.request.RequestCard
 
 @Composable
 fun ExploreScreen(
     onAddRequest: () -> Unit,
     onOpenRequest: (Long) -> Unit,
+    onOpenHelper: (Long) -> Unit,
     viewModel: ExploreViewModel = viewModel(factory = SosViewModelFactory)
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -75,14 +77,20 @@ fun ExploreScreen(
                             Icon(Icons.Outlined.SwapVert, contentDescription = "Sort", tint = SosPurple)
                         }
                         DropdownMenu(expanded = sortMenuOpen, onDismissRequest = { sortMenuOpen = false }) {
-                            RequestSort.entries.forEach { sort ->
-                                DropdownMenuItem(
-                                    text = { Text(sort.label, fontWeight = if (sort == state.sort) FontWeight.Bold else FontWeight.Normal) },
-                                    onClick = {
+                            if (state.tab == ExploreTab.Request) {
+                                RequestSort.entries.forEach { sort ->
+                                    SortMenuItem(sort.label, selected = sort == state.sort) {
                                         viewModel.setSort(sort)
                                         sortMenuOpen = false
                                     }
-                                )
+                                }
+                            } else {
+                                HelperSort.entries.forEach { sort ->
+                                    SortMenuItem(sort.label, selected = sort == state.helperSort) {
+                                        viewModel.setHelperSort(sort)
+                                        sortMenuOpen = false
+                                    }
+                                }
                             }
                         }
                     }
@@ -124,12 +132,16 @@ fun ExploreScreen(
                 }
             }
             when {
-                state.tab == ExploreTab.Helper -> item {
-                    EmptyState("Helpers are coming soon", "Browse requests for now in the Request tab.")
-                }
                 state.loading -> item {
                     Box(Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(color = SosPurple)
+                    }
+                }
+                state.tab == ExploreTab.Helper -> if (state.helpers.isEmpty()) {
+                    item { EmptyState("No matching helpers", "Try a different search or filter.") }
+                } else {
+                    items(state.helpers, key = { "helper-${it.id}" }) { helper ->
+                        HelperCard(helper, onClick = { onOpenHelper(helper.id) })
                     }
                 }
                 state.requests.isEmpty() -> item {
@@ -138,7 +150,7 @@ fun ExploreScreen(
                         "Tap + to post a new request."
                     )
                 }
-                else -> items(state.requests, key = { it.id }) { request ->
+                else -> items(state.requests, key = { "request-${it.id}" }) { request ->
                     RequestCard(request, onClick = { onOpenRequest(request.id) })
                 }
             }
@@ -155,6 +167,14 @@ fun ExploreScreen(
             }
         }
     }
+}
+
+@Composable
+private fun SortMenuItem(label: String, selected: Boolean, onClick: () -> Unit) {
+    DropdownMenuItem(
+        text = { Text(label, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal) },
+        onClick = onClick
+    )
 }
 
 @Composable

@@ -6,7 +6,9 @@ import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
 
-private const val DAY_MILLIS = 24 * 60 * 60 * 1000L
+private const val MINUTE_MILLIS = 60 * 1000L
+private const val HOUR_MILLIS = 60 * MINUTE_MILLIS
+private const val DAY_MILLIS = 24 * HOUR_MILLIS
 
 internal fun formatIdr(amount: Long): String = "IDR " + NumberFormat.getNumberInstance(Locale.US).format(amount)
 
@@ -26,3 +28,18 @@ fun daysFromToday(days: Int): Long {
 
 /** A request is urgent when its deadline is today or tomorrow. */
 internal fun isUrgent(deadline: Long): Boolean = deadline <= daysFromToday(1)
+
+/** Short relative time for chat rows: "Now", "5m", "10h", "5d", "1w". */
+internal fun formatTimeAgo(millis: Long, now: Long = System.currentTimeMillis()): String {
+    val diff = (now - millis).coerceAtLeast(0)
+    return when {
+        diff < MINUTE_MILLIS -> "Now"
+        diff < HOUR_MILLIS -> "${diff / MINUTE_MILLIS}m"
+        diff < DAY_MILLIS -> "${diff / HOUR_MILLIS}h"
+        diff < 7 * DAY_MILLIS -> "${diff / DAY_MILLIS}d"
+        else -> "${diff / (7 * DAY_MILLIS)}w"
+    }
+}
+
+/** "2d ago" style label used on helper profiles. */
+internal fun formatAgo(millis: Long): String = formatTimeAgo(millis).let { if (it == "Now") "Just now" else "$it ago" }

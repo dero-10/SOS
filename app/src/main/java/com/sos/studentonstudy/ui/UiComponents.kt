@@ -1,5 +1,6 @@
 package com.sos.studentonstudy.ui
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,6 +23,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.AlertDialog
@@ -38,6 +41,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -214,6 +220,39 @@ internal fun InitialAvatar(name: String, size: Dp, modifier: Modifier = Modifier
         contentAlignment = Alignment.Center
     ) {
         Text(name.firstOrNull()?.uppercase().orEmpty(), color = Color.White, fontSize = (size.value * .36f).sp, fontWeight = FontWeight.Bold)
+    }
+}
+
+/** Default helper avatar from Figma: a purple ring around a gray disc with a purple person silhouette. */
+@Composable
+internal fun PersonAvatar(size: Dp, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .size(size)
+            .background(SosPurple, CircleShape)
+            .padding(size * 0.07f)
+            .clip(CircleShape)
+            .background(SosAvatarGray)
+    ) {
+        Canvas(Modifier.fillMaxSize()) {
+            val w = this.size.width
+            drawCircle(SosPurple, radius = w * 0.2f, center = Offset(w / 2, w * 0.38f))
+            drawOval(SosPurple, topLeft = Offset(w * 0.14f, w * 0.64f), size = Size(w * 0.72f, w * 0.7f))
+        }
+    }
+}
+
+/** Black shield with a check, shown next to verified helper names. */
+@Composable
+internal fun VerifiedBadge(modifier: Modifier = Modifier, size: Dp = 16.dp) {
+    Icon(Icons.Filled.VerifiedUser, contentDescription = "Verified", tint = Color.Black, modifier = modifier.size(size))
+}
+
+/** Stand-in for the LinkedIn logo (not part of the Material icon set). */
+@Composable
+internal fun LinkedInBadge(modifier: Modifier = Modifier, size: Dp = 20.dp) {
+    Box(modifier = modifier.size(size).background(Color.Black, RoundedCornerShape(size * 0.18f)), contentAlignment = Alignment.Center) {
+        Text("in", color = Color.White, fontSize = (size.value * 0.6f).sp, fontWeight = FontWeight.ExtraBold)
     }
 }
 

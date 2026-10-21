@@ -32,6 +32,8 @@ import com.sos.studentonstudy.ui.auth.LoginScreen
 import com.sos.studentonstudy.ui.auth.RegisterScreen
 import com.sos.studentonstudy.ui.dashboard.DashboardScreen
 import com.sos.studentonstudy.ui.explore.ExploreScreen
+import com.sos.studentonstudy.ui.helper.HelperProfileScreen
+import com.sos.studentonstudy.ui.helper.HelperProfileViewModel
 import com.sos.studentonstudy.ui.profile.ProfileScreen
 import com.sos.studentonstudy.ui.request.RequestFormScreen
 import com.sos.studentonstudy.ui.request.RequestFormViewModel
@@ -44,10 +46,14 @@ object Routes {
     const val CHAT = "chat"
     const val RECENT = "recent"
     const val PROFILE = "profile"
-    const val REQUEST_FORM = "request_form?${RequestFormViewModel.REQUEST_ID_ARG}={${RequestFormViewModel.REQUEST_ID_ARG}}"
+    const val REQUEST_FORM = "request_form?${RequestFormViewModel.REQUEST_ID_ARG}={${RequestFormViewModel.REQUEST_ID_ARG}}" +
+        "&${RequestFormViewModel.HELPER_ID_ARG}={${RequestFormViewModel.HELPER_ID_ARG}}"
+    const val HELPER_PROFILE = "helper_profile/{${HelperProfileViewModel.HELPER_ID_ARG}}"
 
-    fun requestForm(requestId: Long = RequestFormViewModel.NEW_REQUEST_ID) =
-        "request_form?${RequestFormViewModel.REQUEST_ID_ARG}=$requestId"
+    fun requestForm(requestId: Long = RequestFormViewModel.NEW_REQUEST_ID, helperId: Long = RequestFormViewModel.NO_HELPER) =
+        "request_form?${RequestFormViewModel.REQUEST_ID_ARG}=$requestId&${RequestFormViewModel.HELPER_ID_ARG}=$helperId"
+
+    fun helperProfile(helperId: Long) = "helper_profile/$helperId"
 }
 
 private data class TopLevelDestination(val route: String, val label: String, val icon: ImageVector)
@@ -109,15 +115,31 @@ fun SosNavHost(isLoggedIn: Boolean, navController: NavHostController = rememberN
                 composable(Routes.EXPLORE) {
                     ExploreScreen(
                         onAddRequest = { navController.navigate(Routes.requestForm()) },
-                        onOpenRequest = { navController.navigate(Routes.requestForm(it)) }
+                        onOpenRequest = { navController.navigate(Routes.requestForm(it)) },
+                        onOpenHelper = { navController.navigate(Routes.helperProfile(it)) }
+                    )
+                }
+                composable(
+                    Routes.HELPER_PROFILE,
+                    arguments = listOf(navArgument(HelperProfileViewModel.HELPER_ID_ARG) { type = NavType.LongType })
+                ) { entry ->
+                    HelperProfileScreen(
+                        onBack = { if (navController.currentBackStackEntry == entry) navController.popBackStack() },
+                        onChatHelper = { navController.navigate(Routes.requestForm(helperId = it)) }
                     )
                 }
                 composable(
                     Routes.REQUEST_FORM,
-                    arguments = listOf(navArgument(RequestFormViewModel.REQUEST_ID_ARG) {
-                        type = NavType.LongType
-                        defaultValue = RequestFormViewModel.NEW_REQUEST_ID
-                    })
+                    arguments = listOf(
+                        navArgument(RequestFormViewModel.REQUEST_ID_ARG) {
+                            type = NavType.LongType
+                            defaultValue = RequestFormViewModel.NEW_REQUEST_ID
+                        },
+                        navArgument(RequestFormViewModel.HELPER_ID_ARG) {
+                            type = NavType.LongType
+                            defaultValue = RequestFormViewModel.NO_HELPER
+                        }
+                    )
                 ) { entry ->
                     RequestFormScreen(onDone = {
                         // Guard against a double pop when save and back fire together.

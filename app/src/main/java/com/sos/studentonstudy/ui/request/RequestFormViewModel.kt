@@ -156,6 +156,8 @@ class RequestFormViewModel(
     companion object {
         const val REQUEST_ID_ARG = "requestId"
         const val NEW_REQUEST_ID = -1L
+        const val HELPER_ID_ARG = "helperId"
+        const val NO_HELPER = -1L
         const val DEFAULT_BUDGET = 50_000L
         private const val BUDGET_STEP = 5_000L
         private const val TITLE_MAX = 60
