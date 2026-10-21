@@ -1,6 +1,6 @@
 # SOS — Student on Study
 
-Android Studio project built with Kotlin and Jetpack Compose. It uses MVVM, Room, and Navigation Compose, with Login/Register, Home (dashboard), Explore (help requests CRUD), and Profile screens styled after the Figma design. See [PROGRESS.md](PROGRESS.md) for the rubric checklist and the Figma link.
+Android Studio project built with Kotlin and Jetpack Compose. It uses MVVM, Room, and Navigation Compose, with Login/Register, Home (dashboard), Explore (requests and helpers), Chat, Recent, request detail with replies, helper profiles, and Profile screens styled after the Figma design. See [PROGRESS.md](PROGRESS.md) for the rubric checklist and the Figma link.
 
 ## Run
 
