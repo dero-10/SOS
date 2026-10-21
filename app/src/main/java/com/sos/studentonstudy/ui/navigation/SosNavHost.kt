@@ -25,7 +25,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.sos.studentonstudy.ui.BottomItem
-import com.sos.studentonstudy.ui.EmptyState
 import com.sos.studentonstudy.ui.SosBackground
 import com.sos.studentonstudy.ui.SosBottomBar
 import com.sos.studentonstudy.ui.auth.LoginScreen
@@ -38,6 +37,7 @@ import com.sos.studentonstudy.ui.explore.ExploreScreen
 import com.sos.studentonstudy.ui.helper.HelperProfileScreen
 import com.sos.studentonstudy.ui.helper.HelperProfileViewModel
 import com.sos.studentonstudy.ui.profile.ProfileScreen
+import com.sos.studentonstudy.ui.recent.RecentScreen
 import com.sos.studentonstudy.ui.request.RequestDetailScreen
 import com.sos.studentonstudy.ui.request.RequestDetailViewModel
 import com.sos.studentonstudy.ui.request.RequestFormScreen
@@ -183,7 +183,9 @@ fun SosNavHost(isLoggedIn: Boolean, navController: NavHostController = rememberN
                 ) { entry ->
                     ChatDetailScreen(onBack = { if (navController.currentBackStackEntry == entry) navController.popBackStack() })
                 }
-                composable(Routes.RECENT) { EmptyState("Recent", "Your recent activity will appear here.") }
+                composable(Routes.RECENT) {
+                    RecentScreen(onOpenRequest = { navController.navigate(Routes.requestDetail(it)) })
+                }
                 composable(Routes.PROFILE) {
                     ProfileScreen(onLoggedOut = { navController.leaveApp() })
                 }

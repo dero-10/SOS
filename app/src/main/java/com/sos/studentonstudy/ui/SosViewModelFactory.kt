@@ -15,6 +15,7 @@ import com.sos.studentonstudy.ui.dashboard.DashboardViewModel
 import com.sos.studentonstudy.ui.explore.ExploreViewModel
 import com.sos.studentonstudy.ui.helper.HelperProfileViewModel
 import com.sos.studentonstudy.ui.profile.ProfileViewModel
+import com.sos.studentonstudy.ui.recent.RecentViewModel
 import com.sos.studentonstudy.ui.request.RequestDetailViewModel
 import com.sos.studentonstudy.ui.request.RequestFormViewModel
 
@@ -25,6 +26,7 @@ val SosViewModelFactory = viewModelFactory {
     initializer { DashboardViewModel(container().authRepository, container().requestRepository) }
     initializer { ExploreViewModel(container().requestRepository, container().helperRepository) }
     initializer { RequestFormViewModel(createSavedStateHandle(), container().requestRepository, container().authRepository, container().chatRepository) }
+    initializer { RecentViewModel(container().requestRepository, container().replyRepository, container().helperRepository) }
     initializer { ChatListViewModel(container().chatRepository) }
     initializer { ChatDetailViewModel(createSavedStateHandle(), container().chatRepository, container().helperRepository) }
     initializer { RequestDetailViewModel(createSavedStateHandle(), container().requestRepository, container().replyRepository) }
