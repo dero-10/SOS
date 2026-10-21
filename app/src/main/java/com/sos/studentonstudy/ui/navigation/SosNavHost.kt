@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Chat
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,6 +25,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.sos.studentonstudy.ui.BottomItem
+import com.sos.studentonstudy.ui.EmptyState
 import com.sos.studentonstudy.ui.SosBackground
 import com.sos.studentonstudy.ui.SosBottomBar
 import com.sos.studentonstudy.ui.auth.LoginScreen
@@ -38,6 +41,8 @@ object Routes {
     const val REGISTER = "register"
     const val HOME = "home"
     const val EXPLORE = "explore"
+    const val CHAT = "chat"
+    const val RECENT = "recent"
     const val PROFILE = "profile"
     const val REQUEST_FORM = "request_form?${RequestFormViewModel.REQUEST_ID_ARG}={${RequestFormViewModel.REQUEST_ID_ARG}}"
 
@@ -47,10 +52,12 @@ object Routes {
 
 private data class TopLevelDestination(val route: String, val label: String, val icon: ImageVector)
 
-// Figma also has Chat and Recent tabs; they come after the rubric scope.
+// Same order as the Figma bottom bar.
 private val topLevelDestinations = listOf(
     TopLevelDestination(Routes.HOME, "Home", Icons.Outlined.Home),
     TopLevelDestination(Routes.EXPLORE, "Explore", Icons.Outlined.Explore),
+    TopLevelDestination(Routes.CHAT, "Chat", Icons.Outlined.Chat),
+    TopLevelDestination(Routes.RECENT, "Recent", Icons.Outlined.Schedule),
     TopLevelDestination(Routes.PROFILE, "Profile", Icons.Outlined.Person)
 )
 
@@ -117,6 +124,8 @@ fun SosNavHost(isLoggedIn: Boolean, navController: NavHostController = rememberN
                         if (navController.currentBackStackEntry == entry) navController.popBackStack()
                     })
                 }
+                composable(Routes.CHAT) { EmptyState("Chat", "Conversations will appear here.") }
+                composable(Routes.RECENT) { EmptyState("Recent", "Your recent activity will appear here.") }
                 composable(Routes.PROFILE) {
                     ProfileScreen(onLoggedOut = { navController.leaveApp() })
                 }

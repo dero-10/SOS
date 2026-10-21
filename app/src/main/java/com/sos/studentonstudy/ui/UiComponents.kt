@@ -285,7 +285,7 @@ internal fun SosBottomBar(content: @Composable RowScope.() -> Unit) {
 internal fun BottomItem(label: String, icon: ImageVector, selected: Boolean, onClick: () -> Unit) {
     val color = if (selected) SosPurple else SosText
     Column(
-        modifier = Modifier.clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 6.dp),
+        modifier = Modifier.clickable(onClick = onClick).padding(horizontal = 8.dp, vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(icon, contentDescription = label, tint = color, modifier = Modifier.size(26.dp))
