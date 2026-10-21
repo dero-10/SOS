@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Event
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Savings
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Icon
@@ -29,21 +29,21 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sos.studentonstudy.data.local.EstimatedTime
-import com.sos.studentonstudy.data.local.RequestEntity
+import com.sos.studentonstudy.data.local.RequestWithMeta
 import com.sos.studentonstudy.data.local.tagList
 import com.sos.studentonstudy.ui.SosCard
 import com.sos.studentonstudy.ui.SosError
 import com.sos.studentonstudy.ui.SosMuted
 import com.sos.studentonstudy.ui.SosText
 import com.sos.studentonstudy.ui.TagChip
-import com.sos.studentonstudy.ui.formatDate
 import com.sos.studentonstudy.ui.formatIdr
 import com.sos.studentonstudy.ui.isUrgent
 
-/** Request card from the Figma Explore → Request tab. */
+/** Request card from the Figma Explore → Request tab: title, urgent badge, budget, time, reply count and tags. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun RequestCard(request: RequestEntity, onClick: () -> Unit, modifier: Modifier = Modifier) {
+internal fun RequestCard(item: RequestWithMeta, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val request = item.request
     SosCard(modifier = modifier.fillMaxWidth(), onClick = onClick) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.Top) {
@@ -65,11 +65,13 @@ internal fun RequestCard(request: RequestEntity, onClick: () -> Unit, modifier: 
             FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 MetaItem(Icons.Outlined.Savings, formatIdr(request.budget))
                 MetaItem(Icons.Outlined.Schedule, EstimatedTime.label(request.estimatedTime))
-                MetaItem(Icons.Outlined.Event, formatDate(request.deadline))
+                MetaItem(Icons.Outlined.ChatBubbleOutline, item.replyCount.toString())
             }
-            Spacer(Modifier.height(8.dp))
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                request.tagList().forEach { TagChip(it) }
+            if (request.tagList().isNotEmpty()) {
+                Spacer(Modifier.height(8.dp))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    request.tagList().forEach { TagChip(it) }
+                }
             }
         }
     }

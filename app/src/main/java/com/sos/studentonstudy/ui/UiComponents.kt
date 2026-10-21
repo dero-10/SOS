@@ -23,6 +23,9 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.Send
+import androidx.compose.material.icons.outlined.AttachFile
+import androidx.compose.material.icons.outlined.PictureAsPdf
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Search
@@ -50,7 +53,9 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -246,6 +251,95 @@ internal fun PersonAvatar(size: Dp, modifier: Modifier = Modifier) {
 @Composable
 internal fun VerifiedBadge(modifier: Modifier = Modifier, size: Dp = 16.dp) {
     Icon(Icons.Filled.VerifiedUser, contentDescription = "Verified", tint = Color.Black, modifier = modifier.size(size))
+}
+
+/** File chip (PDF icon + name) shown for attachments in requests, replies and chat bubbles. */
+@Composable
+internal fun AttachmentChip(name: String, modifier: Modifier = Modifier, onRemove: (() -> Unit)? = null) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(SosField, RoundedCornerShape(8.dp))
+            .border(1.dp, SosStroke, RoundedCornerShape(8.dp))
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(Icons.Outlined.PictureAsPdf, contentDescription = null, tint = SosText)
+        Spacer(Modifier.width(12.dp))
+        Text(name, color = SosText, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+        if (onRemove != null) {
+            Icon(
+                Icons.Rounded.Close,
+                contentDescription = "Remove attachment",
+                tint = SosMuted,
+                modifier = Modifier.size(18.dp).clickable(onClick = onRemove)
+            )
+        }
+    }
+}
+
+/** Gray pill input with a paperclip, used for "Post a reply…" and the chat message bar. */
+@Composable
+internal fun MessageField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    onAttach: () -> Unit,
+    onSend: () -> Unit,
+    modifier: Modifier = Modifier,
+    showSend: Boolean = true,
+    leading: @Composable (() -> Unit)? = null
+) {
+    Row(
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (leading != null) {
+            leading()
+            Spacer(Modifier.width(8.dp))
+        }
+        BasicTextField(
+            value = value,
+            onValueChange = onValueChange,
+            singleLine = true,
+            textStyle = TextStyle(color = SosText, fontSize = 15.sp),
+            cursorBrush = SolidColor(SosPurple),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+            keyboardActions = KeyboardActions(onSend = { onSend() }),
+            modifier = Modifier.weight(1f),
+            decorationBox = { inner ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(40.dp)
+                        .background(Color(0xFFCCCCCC), RoundedCornerShape(20.dp))
+                        .border(1.dp, Color(0xFF757575), RoundedCornerShape(20.dp))
+                        .padding(horizontal = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(Modifier.weight(1f)) {
+                        if (value.isEmpty()) Text(placeholder, color = Color(0xFF777777), fontSize = 15.sp)
+                        inner()
+                    }
+                    Icon(
+                        Icons.Outlined.AttachFile,
+                        contentDescription = "Attach file",
+                        tint = Color(0xFF666666),
+                        modifier = Modifier.size(20.dp).clickable(onClick = onAttach)
+                    )
+                }
+            }
+        )
+        if (showSend) {
+            Spacer(Modifier.width(8.dp))
+            Box(
+                modifier = Modifier.size(40.dp).background(SosPurple, CircleShape).clickable(onClick = onSend),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.AutoMirrored.Rounded.Send, contentDescription = "Send", tint = Color.White, modifier = Modifier.size(20.dp))
+            }
+        }
+    }
 }
 
 /** Stand-in for the LinkedIn logo (not part of the Material icon set). */

@@ -13,6 +13,7 @@ import com.sos.studentonstudy.ui.dashboard.DashboardViewModel
 import com.sos.studentonstudy.ui.explore.ExploreViewModel
 import com.sos.studentonstudy.ui.helper.HelperProfileViewModel
 import com.sos.studentonstudy.ui.profile.ProfileViewModel
+import com.sos.studentonstudy.ui.request.RequestDetailViewModel
 import com.sos.studentonstudy.ui.request.RequestFormViewModel
 
 /** Builds every ViewModel from the app's [AppContainer]; UI never touches DAOs directly. */
@@ -22,6 +23,7 @@ val SosViewModelFactory = viewModelFactory {
     initializer { DashboardViewModel(container().authRepository, container().requestRepository) }
     initializer { ExploreViewModel(container().requestRepository, container().helperRepository) }
     initializer { RequestFormViewModel(createSavedStateHandle(), container().requestRepository, container().authRepository) }
+    initializer { RequestDetailViewModel(createSavedStateHandle(), container().requestRepository, container().replyRepository) }
     initializer { HelperProfileViewModel(createSavedStateHandle(), container().helperRepository) }
     initializer { ProfileViewModel(container().authRepository) }
 }

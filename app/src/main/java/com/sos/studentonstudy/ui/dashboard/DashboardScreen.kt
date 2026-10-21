@@ -90,8 +90,8 @@ fun DashboardScreen(
                 }
             }
             state.recent.isEmpty() -> item { EmptyState("No requests yet", "Post your first request to get help.") }
-            else -> items(state.recent, key = { it.id }) { request ->
-                RequestCard(request, onClick = { onOpenRequest(request.id) })
+            else -> items(state.recent, key = { it.request.id }) { item ->
+                RequestCard(item, onClick = { onOpenRequest(item.request.id) })
             }
         }
         item { Spacer(Modifier.height(8.dp)) }

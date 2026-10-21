@@ -1,9 +1,5 @@
 package com.sos.studentonstudy.ui.request
 
-import android.net.Uri
-import android.provider.OpenableColumns
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -51,7 +47,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
@@ -74,6 +69,7 @@ import com.sos.studentonstudy.ui.SosViewModelFactory
 import com.sos.studentonstudy.ui.TagChip
 import com.sos.studentonstudy.ui.formatDate
 import com.sos.studentonstudy.ui.formatIdr
+import com.sos.studentonstudy.ui.rememberAttachmentPicker
 
 /** "Add Request Details" screen from Figma, used for both create and edit. */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -85,10 +81,7 @@ fun RequestFormScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
     var timeMenuOpen by rememberSaveable { mutableStateOf(false) }
-    val context = LocalContext.current
-    val pickFile = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri?.let { viewModel.onAttachmentChange(context.displayName(it)) }
-    }
+    val pickFile = rememberAttachmentPicker(viewModel::onAttachmentChange)
     LaunchedEffect(state.finished) { if (state.finished) onDone() }
 
     Column(modifier = Modifier.fillMaxSize().imePadding()) {
@@ -128,11 +121,11 @@ fun RequestFormScreen(
             Spacer(Modifier.height(12.dp))
             val attachment = state.attachmentName
             if (attachment == null) {
-                GrayBox(onClick = { pickFile.launch("*/*") }) {
+                GrayBox(onClick = pickFile) {
                     Text("+ Add Attachment", color = SosText, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                 }
             } else {
-                GrayBox(onClick = { pickFile.launch("*/*") }) {
+                GrayBox(onClick = pickFile) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 14.dp)) {
                         Icon(Icons.Outlined.PictureAsPdf, contentDescription = null, tint = SosText)
                         Spacer(Modifier.width(12.dp))
@@ -278,8 +271,3 @@ private fun GrayBox(onClick: () -> Unit, content: @Composable () -> Unit) {
         contentAlignment = Alignment.Center
     ) { content() }
 }
-
-private fun android.content.Context.displayName(uri: Uri): String =
-    contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
-        if (cursor.moveToFirst()) cursor.getString(0) else null
-    } ?: uri.lastPathSegment ?: "attachment"

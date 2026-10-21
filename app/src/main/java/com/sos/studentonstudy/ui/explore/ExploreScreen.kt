@@ -150,8 +150,8 @@ fun ExploreScreen(
                         "Tap + to post a new request."
                     )
                 }
-                else -> items(state.requests, key = { "request-${it.id}" }) { request ->
-                    RequestCard(request, onClick = { onOpenRequest(request.id) })
+                else -> items(state.requests, key = { "request-${it.request.id}" }) { item ->
+                    RequestCard(item, onClick = { onOpenRequest(item.request.id) })
                 }
             }
         }

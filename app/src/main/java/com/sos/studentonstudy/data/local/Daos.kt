@@ -39,9 +39,6 @@ private const val REQUEST_WITH_META =
 
 @Dao
 interface RequestDao {
-    @Query("SELECT * FROM requests WHERE userId = :userId ORDER BY createdAt DESC")
-    fun observeAll(userId: Long): Flow<List<RequestEntity>>
-
     /** Public requests from everyone; privately sent requests are excluded. */
     @Query("$REQUEST_WITH_META WHERE r.helperId IS NULL ORDER BY r.createdAt DESC")
     fun observeFeed(): Flow<List<RequestWithMeta>>

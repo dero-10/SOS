@@ -3,7 +3,7 @@ package com.sos.studentonstudy.ui.explore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sos.studentonstudy.data.local.HelperEntity
-import com.sos.studentonstudy.data.local.RequestEntity
+import com.sos.studentonstudy.data.local.RequestWithMeta
 import com.sos.studentonstudy.data.local.skillList
 import com.sos.studentonstudy.data.local.tagList
 import com.sos.studentonstudy.data.repository.HelperRepository
@@ -26,7 +26,7 @@ data class ExploreUiState(
     val tag: String? = null,
     val sort: RequestSort = RequestSort.Newest,
     val helperSort: HelperSort = HelperSort.Recommended,
-    val requests: List<RequestEntity> = emptyList(),
+    val requests: List<RequestWithMeta> = emptyList(),
     val helpers: List<HelperEntity> = emptyList(),
     val loading: Boolean = true
 )
@@ -50,16 +50,19 @@ class ExploreViewModel(requestRepository: RequestRepository, helperRepository: H
         ExploreFilters(tab, query, tag, sort, helperSort)
     }
 
-    val uiState: StateFlow<ExploreUiState> = combine(requestRepository.requests, helperRepository.helpers, filters) { requests, helpers, f ->
+    val uiState: StateFlow<ExploreUiState> = combine(requestRepository.feed, helperRepository.helpers, filters) { requests, helpers, f ->
         val needle = f.query.trim()
         val visibleRequests = requests
-            .filter { f.tag == null || f.tag in it.tagList() }
-            .filter { needle.isEmpty() || it.title.contains(needle, ignoreCase = true) || it.details.contains(needle, ignoreCase = true) }
+            .filter { f.tag == null || f.tag in it.request.tagList() }
+            .filter {
+                needle.isEmpty() || it.request.title.contains(needle, ignoreCase = true) ||
+                    it.request.details.contains(needle, ignoreCase = true)
+            }
             .let { list ->
                 when (f.sort) {
-                    RequestSort.Newest -> list.sortedByDescending { it.createdAt }
-                    RequestSort.Budget -> list.sortedByDescending { it.budget }
-                    RequestSort.Deadline -> list.sortedBy { it.deadline }
+                    RequestSort.Newest -> list.sortedByDescending { it.request.createdAt }
+                    RequestSort.Budget -> list.sortedByDescending { it.request.budget }
+                    RequestSort.Deadline -> list.sortedBy { it.request.deadline }
                 }
             }
         val visibleHelpers = helpers
