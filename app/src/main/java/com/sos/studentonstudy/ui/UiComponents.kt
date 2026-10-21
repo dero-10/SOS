@@ -159,7 +159,7 @@ internal fun SosSearchBar(value: String, onValueChange: (String) -> Unit, modifi
         value = value,
         onValueChange = onValueChange,
         singleLine = true,
-        textStyle = TextStyle(color = SosText, fontSize = 14.sp),
+        textStyle = TextStyle(color = SosText, fontSize = 14.sp, fontFamily = Inter),
         cursorBrush = SolidColor(SosPurple),
         modifier = modifier,
         decorationBox = { inner ->
@@ -302,7 +302,7 @@ internal fun MessageField(
             value = value,
             onValueChange = onValueChange,
             singleLine = true,
-            textStyle = TextStyle(color = SosText, fontSize = 15.sp),
+            textStyle = TextStyle(color = SosText, fontSize = 15.sp, fontFamily = Inter),
             cursorBrush = SolidColor(SosPurple),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
             keyboardActions = KeyboardActions(onSend = { onSend() }),

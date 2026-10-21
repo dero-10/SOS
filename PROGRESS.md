@@ -26,7 +26,7 @@ SOS is a peer-help marketplace for students: a student posts a **help request** 
 | Profile page (Clift) | Profile | `ui/profile/ProfileScreen.kt` |
 
 - Bottom nav in Figma: Home, Explore, Chat, Recent, Profile (icons black, selected purple). There is **no Figma frame for Home or Recent**; Home is the rubric dashboard and Recent is our own interpretation (activity timeline).
-- Design tokens are in [`ui/SosTheme.kt`](app/src/main/java/com/sos/studentonstudy/ui/SosTheme.kt): purple `#4F46E5`, background `#F4F4F4`, card `#F7F7F7` + shadow, teal chips `#D4E7E8`, field gray `#EEEDEB`, urgent red. Figma uses the **Inter** font; the app still uses the system font (see "Still open").
+- Design tokens are in [`ui/SosTheme.kt`](app/src/main/java/com/sos/studentonstudy/ui/SosTheme.kt): purple `#4F46E5`, background `#F4F4F4`, card `#F7F7F7` + shadow, teal chips `#D4E7E8`, field gray `#EEEDEB`, urgent red. The app uses **Inter** like the Figma (Regular/Medium/SemiBold/Bold in `res/font`, wired in `SosTheme.kt`; SIL OFL license in `third_party/inter/`). Text built on `BasicTextField` must set `fontFamily = Inter` itself.
 - Deliberate deviations from the PNGs: the search bar at the top of the helper profile and request detail is left out (it would be a dead control), and the request detail shows the deadline ("Due …") because the form collects one.
 
 ## Grading rubric (UTS — "D. Minimal Project Apps", 45% of total)
@@ -69,7 +69,7 @@ app/src/main/java/com/sos/studentonstudy/
 │   ├── local/                 # Entities.kt (users, requests, helpers, help_history, replies, chat_messages), Daos.kt, SosDatabase.kt (v4)
 │   └── repository/            # Auth, Request, Helper, Reply, Chat repositories
 └── ui/
-    ├── SosTheme.kt, Format.kt, UiComponents.kt, Attachments.kt, SosViewModelFactory.kt
+    ├── SosTheme.kt (colours + Inter typography), Format.kt, UiComponents.kt, Attachments.kt, SosViewModelFactory.kt
     ├── navigation/SosNavHost.kt
     ├── auth/                  # Login, Register
     ├── dashboard/             # Home tab
@@ -104,10 +104,10 @@ On this machine Gradle fails with `Unable to establish loopback connection` when
 - 2026-10-07 — Verified on emulator: login validation + wrong password, Home stats, Explore list, form validation, create (Tomorrow → Urgent badge), edit (deadline change), delete with confirm, profile edit + save, logout with confirm, Back after logout stays on Login, session kept after reinstall.
 - 2026-10-07 — Committed in 7 commits and pushed to https://github.com/dero-10/SOS (main).
 - 2026-10-22 — Built the rest of the Figma export in 8 commits: data layer + seed, 5-tab bar, Helper tab + profile, request detail + replies, chat list/detail + Chat Helper flow, Recent, Profile polish (LinkedIn, balance dialogs), request images. Checked on the emulator: all tabs, helper profile, Chat Helper → Send → chat bubble, own/other request detail, posting a reply, Buy Credits. Not yet exercised on the emulator: image attachment picking, Withdraw, edit/delete after the detail-screen change, LinkedIn edit field, rotation on the new screens. Not pushed.
+- 2026-10-22 — Added the Inter font (v4.1 static TTFs from the official rsms/inter release) and applied it in the theme; confirmed on the emulator.
 
 ## Still open
 
-- [ ] **Inter font** — Figma uses Inter; the app uses the system font. Needs the font files added under `res/font` (not downloaded yet).
 - [ ] Language and Display rows only list what exists today (English, Light mode); Bahasa Indonesia and Dark mode are shown as "Coming soon" (dark mode would need the colour constants in `SosTheme.kt` to become theme-aware).
 - [ ] Deleted/replaced request images stay in app storage (`files/request_images`).
 - [ ] Real Room migrations (see Tech stack).
