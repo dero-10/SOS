@@ -1,5 +1,6 @@
 package com.sos.studentonstudy.data.repository
 
+import com.sos.studentonstudy.data.RequestImageFiles
 import com.sos.studentonstudy.data.SessionManager
 import com.sos.studentonstudy.data.local.RequestDao
 import com.sos.studentonstudy.data.local.RequestEntity
@@ -11,7 +12,11 @@ import kotlinx.coroutines.flow.flowOf
 
 /** Help requests: the logged-in user's own (CRUD) and the public feed from everyone. */
 @OptIn(ExperimentalCoroutinesApi::class)
-class RequestRepository(private val requestDao: RequestDao, private val session: SessionManager) {
+class RequestRepository(
+    private val requestDao: RequestDao,
+    private val session: SessionManager,
+    private val imageFiles: RequestImageFiles
+) {
     /** Every public request, newest first; what Explore → Request shows. */
     val feed: Flow<List<RequestWithMeta>> = requestDao.observeFeed()
 
@@ -31,9 +36,17 @@ class RequestRepository(private val requestDao: RequestDao, private val session:
             val userId = session.userId.value ?: return
             requestDao.insert(request.copy(userId = userId))
         } else {
+            val oldPath = requestDao.getById(request.id)?.imagePath
             requestDao.update(request)
+            if (oldPath != request.imagePath) imageFiles.delete(oldPath)
         }
     }
 
-    suspend fun delete(request: RequestEntity) = requestDao.delete(request)
+    suspend fun delete(request: RequestEntity) {
+        requestDao.delete(request)
+        imageFiles.delete(request.imagePath)
+    }
+
+    /** Removes picture files that no request uses any more. */
+    suspend fun sweepImages() = imageFiles.sweepOrphans()
 }

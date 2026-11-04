@@ -36,7 +36,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.sos.studentonstudy.ui.Text
+import com.sos.studentonstudy.ui.translate
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -59,10 +60,12 @@ import com.sos.studentonstudy.ui.BackTopBar
 import com.sos.studentonstudy.ui.ConfirmDialog
 import com.sos.studentonstudy.ui.InitialAvatar
 import com.sos.studentonstudy.ui.LinkedInBadge
+import com.sos.studentonstudy.data.AppLanguage
 import com.sos.studentonstudy.ui.SosButton
 import com.sos.studentonstudy.ui.SosMuted
 import com.sos.studentonstudy.ui.SosPurple
 import com.sos.studentonstudy.ui.SosRow
+import com.sos.studentonstudy.ui.SosSurface
 import com.sos.studentonstudy.ui.SosTeal
 import com.sos.studentonstudy.ui.SosText
 import com.sos.studentonstudy.ui.SosTextField
@@ -75,10 +78,12 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = viewModel(factory = SosViewModelFactory)
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val darkMode by viewModel.darkMode.collectAsStateWithLifecycle()
+    val language by viewModel.language.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(state.message) {
         state.message?.let {
-            snackbarHostState.showSnackbar(it)
+            snackbarHostState.showSnackbar(translate(it, language))
             viewModel.messageShown()
         }
     }
@@ -90,6 +95,8 @@ fun ProfileScreen(
         if (form == null) {
             ProfileContent(
                 user = state.user,
+                darkMode = darkMode,
+                language = language,
                 onEdit = viewModel::startEditing,
                 onNoLinkedin = { viewModel.showMessage("Add your LinkedIn link in Edit Profile") },
                 onBalanceAction = viewModel::openBalanceDialog,
@@ -105,7 +112,7 @@ fun ProfileScreen(
     state.balanceDialog?.let { dialog ->
         BalanceAmountDialog(dialog, viewModel::onAmountChange, viewModel::confirmBalance, viewModel::dismissBalanceDialog)
     }
-    state.settingDialog?.let { SettingInfoDialog(it, viewModel::dismissSettingDialog) }
+    state.settingDialog?.let { SettingDialogContent(it, darkMode, language, viewModel::setDarkMode, viewModel::setLanguage, viewModel::dismissSettingDialog) }
 
     if (state.confirmLogout) {
         ConfirmDialog(
@@ -124,6 +131,8 @@ fun ProfileScreen(
 @Composable
 private fun ProfileContent(
     user: UserEntity?,
+    darkMode: Boolean,
+    language: AppLanguage,
     onEdit: () -> Unit,
     onNoLinkedin: () -> Unit,
     onBalanceAction: (BalanceAction) -> Unit,
@@ -138,7 +147,7 @@ private fun ProfileContent(
                 .padding(top = 188.dp)
                 .fillMaxWidth()
                 .height(900.dp)
-                .background(Color.White, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                .background(SosSurface, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
         )
         Column(modifier = Modifier.padding(top = 140.dp)) {
             Row(modifier = Modifier.padding(horizontal = 32.dp), verticalAlignment = Alignment.Top) {
@@ -199,8 +208,8 @@ private fun ProfileContent(
             }
             Spacer(Modifier.height(40.dp))
             Column(modifier = Modifier.padding(horizontal = 14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                SettingRow(Icons.Outlined.Language, "Language", "English") { onSetting(SettingDialog.Language) }
-                SettingRow(Icons.Outlined.PhoneAndroid, "Display", "Light mode") { onSetting(SettingDialog.Display) }
+                SettingRow(Icons.Outlined.Language, "Language", language.label) { onSetting(SettingDialog.Language) }
+                SettingRow(Icons.Outlined.PhoneAndroid, "Display", if (darkMode) "Dark mode" else "Light mode") { onSetting(SettingDialog.Display) }
                 SettingRow(Icons.AutoMirrored.Outlined.Logout, "Logout", null, onLogout)
             }
             Spacer(Modifier.height(24.dp))

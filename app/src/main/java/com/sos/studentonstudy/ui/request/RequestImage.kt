@@ -31,7 +31,7 @@ import java.util.UUID
 
 /** Copies picked request images into app-private storage so they stay readable after the picker's grant ends. */
 internal object ImageStore {
-    private const val DIRECTORY = "request_images"
+    private const val DIRECTORY = com.sos.studentonstudy.data.RequestImageFiles.DIRECTORY
     private const val MAX_BYTES = 8L * 1024 * 1024
     private const val MAX_EDGE = 1024
 

@@ -86,7 +86,7 @@ app/src/main/java/com/sos/studentonstudy/
 - Kotlin 2.2.10, AGP 8.13.2, Gradle 8.13, JDK toolchain 21, compileSdk/targetSdk 34, minSdk 24
 - Compose BOM 2024.04.01 (Material 3), Navigation Compose 2.8.5, Lifecycle 2.8.7
 - Room 2.7.2 via KSP 2.2.10-2.0.2 (Room 2.6.x fails under KSP2 with "unexpected jvm signature V" — don't downgrade)
-- DB uses `fallbackToDestructiveMigration`: **every schema bump (now v4) wipes local data and re-seeds**. Add real migrations before shipping. After a wipe the saved session may point at a user id that no longer exists; clear app data (or log out first) if the profile looks empty.
+- Room schema is exported to `app/schemas/` (baseline v4). Versions 1-3 (dev builds) still fall back to a wipe; from v4 on, every schema change needs a `Migration` in `data/local/Migrations.kt`.
 
 ## Build & run
 
@@ -106,8 +106,14 @@ On this machine Gradle fails with `Unable to establish loopback connection` when
 - 2026-10-22 — Built the rest of the Figma export in 8 commits: data layer + seed, 5-tab bar, Helper tab + profile, request detail + replies, chat list/detail + Chat Helper flow, Recent, Profile polish (LinkedIn, balance dialogs), request images. Checked on the emulator: all tabs, helper profile, Chat Helper → Send → chat bubble, own/other request detail, posting a reply, Buy Credits. Not yet exercised on the emulator: image attachment picking, Withdraw, edit/delete after the detail-screen change, LinkedIn edit field, rotation on the new screens. Not pushed.
 - 2026-10-22 — Added the Inter font (v4.1 static TTFs from the official rsms/inter release) and applied it in the theme; confirmed on the emulator.
 
+## Week 12 additions
+
+- **Dark mode** — Profile → Display. Surface colours in `SosTheme.kt` are now theme-aware (`SosBackground`, `SosText`, ... read a `CompositionLocal`); preference saved in `data/AppSettings.kt`.
+- **Bahasa Indonesia** — Profile → Language. `ui/Strings.kt` holds the English→Indonesian dictionary; screens import its `Text` wrapper instead of Material's, so fixed UI strings translate automatically (user content and untranslated strings stay English).
+- **Image cleanup** — `data/RequestImageFiles.kt` deletes a request's picture when the request is deleted or its picture replaced, and sweeps orphaned files at app start.
+- **Migrations** — see Tech stack above.
+
 ## Still open
 
-- [ ] Language and Display rows only list what exists today (English, Light mode); Bahasa Indonesia and Dark mode are shown as "Coming soon" (dark mode would need the colour constants in `SosTheme.kt` to become theme-aware).
-- [ ] Deleted/replaced request images stay in app storage (`files/request_images`).
-- [ ] Real Room migrations (see Tech stack).
+- [ ] Emulator testing of: image picking, Withdraw, edit/delete request, LinkedIn field, rotation on new screens, and a visual pass over dark mode.
+- [ ] Some dynamic strings (e.g. dates, helper-specific text) are not translated to Indonesian.

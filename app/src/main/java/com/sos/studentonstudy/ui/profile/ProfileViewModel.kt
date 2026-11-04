@@ -2,6 +2,8 @@ package com.sos.studentonstudy.ui.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sos.studentonstudy.data.AppLanguage
+import com.sos.studentonstudy.data.AppSettings
 import com.sos.studentonstudy.data.local.UserEntity
 import com.sos.studentonstudy.data.repository.AuthRepository
 import com.sos.studentonstudy.ui.formatIdr
@@ -50,7 +52,12 @@ private data class LocalState(
     val settingDialog: SettingDialog? = null
 )
 
-class ProfileViewModel(private val auth: AuthRepository) : ViewModel() {
+class ProfileViewModel(private val auth: AuthRepository, private val settings: AppSettings) : ViewModel() {
+    val darkMode: StateFlow<Boolean> = settings.darkMode
+    val language: StateFlow<AppLanguage> = settings.language
+    fun setDarkMode(enabled: Boolean) = settings.setDarkMode(enabled)
+    fun setLanguage(value: AppLanguage) = settings.setLanguage(value)
+
     private val local = MutableStateFlow(LocalState())
 
     val uiState: StateFlow<ProfileUiState> = combine(auth.currentUser, local) { user, local ->

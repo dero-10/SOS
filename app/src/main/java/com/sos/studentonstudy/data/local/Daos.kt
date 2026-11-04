@@ -53,6 +53,10 @@ interface RequestDao {
     @Query("$REQUEST_WITH_META WHERE r.id = :id")
     fun observeWithMeta(id: Long): Flow<RequestWithMeta?>
 
+    /** Every picture path still referenced by a request; used to find orphaned files. */
+    @Query("SELECT imagePath FROM requests WHERE imagePath IS NOT NULL")
+    suspend fun allImagePaths(): List<String>
+
     @Query("SELECT * FROM requests WHERE id = :id")
     suspend fun getById(id: Long): RequestEntity?
 

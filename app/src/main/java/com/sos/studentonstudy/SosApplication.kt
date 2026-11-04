@@ -2,6 +2,8 @@ package com.sos.studentonstudy
 
 import android.app.Application
 import android.content.Context
+import com.sos.studentonstudy.data.AppSettings
+import com.sos.studentonstudy.data.RequestImageFiles
 import com.sos.studentonstudy.data.SessionManager
 import com.sos.studentonstudy.data.seedDatabase
 import com.sos.studentonstudy.data.local.SosDatabase
@@ -29,13 +31,17 @@ class SosApplication : Application() {
 class AppContainer(context: Context) {
     private val database = SosDatabase.create(context)
     private val session = SessionManager(context)
+    val settings = AppSettings(context)
     val authRepository = AuthRepository(database.userDao(), session)
-    val requestRepository = RequestRepository(database.requestDao(), session)
+    val requestRepository = RequestRepository(database.requestDao(), session, RequestImageFiles(context, database.requestDao()))
     val helperRepository = HelperRepository(database.helperDao())
     val replyRepository = ReplyRepository(database.replyDao(), session)
     val chatRepository = ChatRepository(database.chatDao(), database.requestDao(), session)
 
     init {
-        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch { seedDatabase(database) }
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            seedDatabase(database)
+            requestRepository.sweepImages()
+        }
     }
 }

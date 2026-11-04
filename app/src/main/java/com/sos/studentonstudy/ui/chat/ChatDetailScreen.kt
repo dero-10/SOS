@@ -24,7 +24,7 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
+import com.sos.studentonstudy.ui.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,6 +45,7 @@ import com.sos.studentonstudy.ui.PersonAvatar
 import com.sos.studentonstudy.ui.SosBackground
 import com.sos.studentonstudy.ui.SosMuted
 import com.sos.studentonstudy.ui.SosPurple
+import com.sos.studentonstudy.ui.SosSurface
 import com.sos.studentonstudy.ui.SosStroke
 import com.sos.studentonstudy.ui.SosText
 import com.sos.studentonstudy.ui.SosViewModelFactory
@@ -110,7 +111,7 @@ private fun MessageBubble(message: ChatMessageEntity) {
         Column(
             modifier = Modifier
                 .widthIn(max = 300.dp)
-                .background(if (message.fromMe) SosBackground else Color.White, RoundedCornerShape(20.dp))
+                .background(if (message.fromMe) SosBackground else SosSurface, RoundedCornerShape(20.dp))
                 .border(1.dp, SosStroke, RoundedCornerShape(20.dp))
                 .padding(16.dp)
         ) {

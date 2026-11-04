@@ -31,7 +31,7 @@ val SosViewModelFactory = viewModelFactory {
     initializer { ChatDetailViewModel(createSavedStateHandle(), container().chatRepository, container().helperRepository) }
     initializer { RequestDetailViewModel(createSavedStateHandle(), container().requestRepository, container().replyRepository) }
     initializer { HelperProfileViewModel(createSavedStateHandle(), container().helperRepository) }
-    initializer { ProfileViewModel(container().authRepository) }
+    initializer { ProfileViewModel(container().authRepository, container().settings) }
 }
 
 private fun CreationExtras.container(): AppContainer = (this[APPLICATION_KEY] as SosApplication).container
