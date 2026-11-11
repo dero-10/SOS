@@ -113,6 +113,30 @@ On this machine Gradle fails with `Unable to establish loopback connection` when
 - **Image cleanup** — `data/RequestImageFiles.kt` deletes a request's picture when the request is deleted or its picture replaced, and sweeps orphaned files at app start.
 - **Migrations** — see Tech stack above.
 
+## Online migration (Supabase) — branch `online-supabase`
+
+Goal: online-only app. Approach: **remote first, Room as cache** — each repository talks to Supabase and writes the result into Room, so ViewModels and screens keep reading the same Room Flows. Without keys in `local.properties` the app stays offline (see README).
+
+| Step | Status | Where |
+|---|---|---|
+| 1. SDK + config: supabase-kt 3.1.4 (Auth, Postgrest), Ktor OkHttp, INTERNET permission, keys → BuildConfig | ✅ | `app/build.gradle.kts`, `data/remote/Supabase.kt` |
+| 2. Server schema: profiles (helpers are profiles with `is_helper`), requests, replies, messages, reviews, `helper_stats` view, `adjust_balance` RPC, RLS on every table, storage bucket `request-images`, realtime on messages | ✅ written, run it in the SQL editor | `supabase/schema.sql` |
+| 3. Auth + Profile online: sign-in/sign-up via Supabase, profile cached in Room (`users.remoteId`, Room v5 + `MIGRATION_4_5`), profile edit and balance via server, session dropped when the Supabase session is gone | ✅ code, ⬜ not yet tested against a live project | `data/repository/AuthRepository.kt` |
+| 4. Requests CRUD online: create/edit/delete go to Supabase first, feed (newest 100) + own requests mirrored into Room (`requests.remoteId`) on login, app start and when Home/Explore open; authors cached as `users` rows; pictures uploaded to the `request-images` bucket and shown from their public URL (Coil); save/delete errors shown on the form | ✅ code, ⬜ not yet tested against a live project | `RequestRepository`, `data/remote/RequestDtos.kt` |
+| 5. Helpers from `profiles` + `helper_stats` instead of seed | ⬜ | `HelperRepository` |
+| 6. Replies online | ⬜ | `ReplyRepository` |
+| 7. Chat online + Realtime (`messages`, sender/receiver) | ⬜ | `ChatRepository` |
+| 8. Push notifications (FCM), reviews UI, request status flow | ⬜ | |
+| 9. Real payments (Midtrans/Xendit) instead of simulated balance | ⬜ | |
+
+Notes:
+- Supabase 3.2+ pulls Lifecycle 2.9 (needs compileSdk 35); 3.1.4 matches the current Lifecycle 2.8.7 / compileSdk 34.
+- Supabase returns one "invalid credentials" error for unknown email and wrong password, so online login shows "Incorrect email or password".
+- Room local ids (Long) stay; `remoteId` maps to the Supabase id (uuid for users, bigint for requests). Steps 5–7 add the same column to the other tables. Both columns are in `MIGRATION_4_5`.
+- Online mode seeds only the helpers; seeded users/requests/chats are hidden from the feed (`remoteId IS NULL`).
+- Still local while online: requests sent privately to a helper ("Chat Helper") and replies, because helpers and chat are not on the server yet (steps 5–7).
+- No pull-to-refresh or realtime for requests yet; the feed refreshes when Home or Explore opens.
+
 ## Still open
 
 - [ ] Emulator testing of: image picking, Withdraw, edit/delete request, LinkedIn field, rotation on new screens, and a visual pass over dark mode.

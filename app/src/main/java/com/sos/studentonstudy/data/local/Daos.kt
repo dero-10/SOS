@@ -28,6 +28,31 @@ interface UserDao {
 
     @Query("SELECT COUNT(*) FROM users")
     suspend fun count(): Int
+
+    @Query("SELECT * FROM users WHERE remoteId = :remoteId LIMIT 1")
+    suspend fun findByRemoteId(remoteId: String): UserEntity?
+
+    /** Overwrites the cached copy of an online account with the server's values. */
+    @Query(
+        "UPDATE users SET remoteId = :remoteId, name = :name, email = :email, major = :major, " +
+            "university = :university, linkedinUrl = :linkedinUrl, balance = :balance WHERE id = :id"
+    )
+    suspend fun updateFromRemote(
+        id: Long, remoteId: String, name: String, email: String, major: String,
+        university: String, linkedinUrl: String, balance: Long
+    )
+
+    /** Caches another user's public profile (e.g. a request author) without touching the balance. */
+    @Query(
+        "UPDATE users SET remoteId = :remoteId, name = :name, email = :email, major = :major, " +
+            "university = :university, linkedinUrl = :linkedinUrl WHERE id = :id"
+    )
+    suspend fun updatePublicProfile(
+        id: Long, remoteId: String, name: String, email: String, major: String, university: String, linkedinUrl: String
+    )
+
+    @Query("UPDATE users SET balance = :balance WHERE id = :id")
+    suspend fun setBalance(id: Long, balance: Long)
 }
 
 /** A request with its author's name and how many replies it has. */
@@ -43,12 +68,25 @@ private const val REQUEST_WITH_META =
 
 @Dao
 interface RequestDao {
-    /** Public requests from everyone; privately sent requests are excluded. */
-    @Query("$REQUEST_WITH_META WHERE r.helperId IS NULL ORDER BY r.createdAt DESC")
-    fun observeFeed(): Flow<List<RequestWithMeta>>
+    /**
+     * Public requests from everyone; privately sent requests are excluded.
+     * When [online], only rows mirrored from Supabase count (local seed rows are hidden).
+     */
+    @Query("$REQUEST_WITH_META WHERE r.helperId IS NULL AND (:online = 0 OR r.remoteId IS NOT NULL) ORDER BY r.createdAt DESC")
+    fun observeFeed(online: Boolean): Flow<List<RequestWithMeta>>
 
-    @Query("$REQUEST_WITH_META WHERE r.userId = :userId ORDER BY r.createdAt DESC")
-    fun observeOwnWithMeta(userId: Long): Flow<List<RequestWithMeta>>
+    /** Private requests to a helper stay local until chat moves online, so they are kept when [online]. */
+    @Query(
+        "$REQUEST_WITH_META WHERE r.userId = :userId " +
+            "AND (:online = 0 OR r.remoteId IS NOT NULL OR r.helperId IS NOT NULL) ORDER BY r.createdAt DESC"
+    )
+    fun observeOwnWithMeta(userId: Long, online: Boolean): Flow<List<RequestWithMeta>>
+
+    @Query("SELECT * FROM requests WHERE remoteId = :remoteId LIMIT 1")
+    suspend fun findByRemoteId(remoteId: Long): RequestEntity?
+
+    @Query("SELECT * FROM requests WHERE remoteId IS NOT NULL")
+    suspend fun allRemote(): List<RequestEntity>
 
     @Query("$REQUEST_WITH_META WHERE r.id = :id")
     fun observeWithMeta(id: Long): Flow<RequestWithMeta?>
@@ -83,6 +121,9 @@ interface HelperDao {
 
     @Query("SELECT * FROM helpers WHERE id = :id")
     fun observe(id: Long): Flow<HelperEntity?>
+
+    @Query("SELECT COUNT(*) FROM helpers")
+    suspend fun count(): Int
 
     @Query("SELECT * FROM help_history WHERE helperId = :helperId ORDER BY completedAt DESC")
     fun observeHistory(helperId: Long): Flow<List<HelpHistoryEntity>>

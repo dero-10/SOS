@@ -88,8 +88,11 @@ class ProfileViewModel(private val auth: AuthRepository, private val settings: A
         }
         viewModelScope.launch {
             val url = if (linkedin.isEmpty() || linkedin.startsWith("http", ignoreCase = true)) linkedin else "https://$linkedin"
-            auth.updateProfile(current.name, current.major, current.university, url)
-            local.update { it.copy(form = null, message = "Profile saved") }
+            val saved = auth.updateProfile(current.name, current.major, current.university, url)
+            local.update {
+                if (saved) it.copy(form = null, message = "Profile saved")
+                else it.copy(message = "Could not save your profile. Check your connection and try again")
+            }
         }
     }
 
@@ -123,7 +126,9 @@ class ProfileViewModel(private val auth: AuthRepository, private val settings: A
                     val text = if (dialog.action == BalanceAction.Withdraw) "${formatIdr(amount)} withdrawn" else "${formatIdr(amount)} added to your balance"
                     it.copy(balanceDialog = null, message = text)
                 } else {
-                    it.copy(balanceDialog = dialog.copy(error = "Balance changed, please try again"))
+                    val text = if (auth.isOnline) "Could not update your balance. Check your connection and try again"
+                    else "Balance changed, please try again"
+                    it.copy(balanceDialog = dialog.copy(error = text))
                 }
             }
         }

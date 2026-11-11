@@ -248,9 +248,13 @@ fun RequestFormScreen(
             state.budgetError?.let { FieldError(it) }
             Spacer(Modifier.height(24.dp))
         }
+        state.formError?.let {
+            Box(Modifier.fillMaxWidth().padding(horizontal = 40.dp)) { FieldError(it) }
+        }
         SosButton(
             text = if (state.isEdit) "Save" else "Send",
             onClick = viewModel::save,
+            loading = state.saving,
             modifier = Modifier.padding(horizontal = 40.dp, vertical = 20.dp)
         )
     }

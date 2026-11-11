@@ -180,5 +180,15 @@ private val INDONESIAN = mapOf(
     "Enter an amount" to "Masukkan jumlah", "Balance changed, please try again" to "Saldo berubah, coba lagi",
     "Adds credits to your SOS balance. This is a demo, no real payment is made." to "Menambah kredit ke saldo SOS Anda. Ini demo, tidak ada pembayaran sungguhan.",
     "Moves money out of your SOS balance. This is a demo, nothing is sent to a bank." to "Memindahkan uang dari saldo SOS Anda. Ini demo, tidak ada yang dikirim ke bank.",
-    "Language" to "Bahasa", "Display" to "Tampilan", "Light mode" to "Mode terang", "Dark mode" to "Mode gelap", "Selected" to "Dipilih"
+    "Language" to "Bahasa", "Display" to "Tampilan", "Light mode" to "Mode terang", "Dark mode" to "Mode gelap", "Selected" to "Dipilih",
+    // Online (Supabase)
+    "Incorrect email or password" to "Email atau kata sandi salah",
+    "Confirm your email first, then log in" to "Konfirmasi email Anda dulu, lalu masuk",
+    "No internet connection. Check your network and try again" to "Tidak ada koneksi internet. Periksa jaringan Anda dan coba lagi",
+    "Something went wrong on the server. Please try again" to "Terjadi kesalahan di server. Silakan coba lagi",
+    "Account created. Open the link we emailed you, then log in" to "Akun dibuat. Buka tautan yang kami kirim ke email Anda, lalu masuk",
+    "Could not save your profile. Check your connection and try again" to "Profil tidak dapat disimpan. Periksa koneksi Anda dan coba lagi",
+    "Could not update your balance. Check your connection and try again" to "Saldo tidak dapat diperbarui. Periksa koneksi Anda dan coba lagi",
+    "Could not save your request. Check your connection and try again" to "Request tidak dapat disimpan. Periksa koneksi Anda dan coba lagi",
+    "Could not delete your request. Check your connection and try again" to "Request tidak dapat dihapus. Periksa koneksi Anda dan coba lagi"
 )

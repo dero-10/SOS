@@ -14,7 +14,7 @@ import androidx.room.RoomDatabase
         ReplyEntity::class,
         ChatMessageEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = true
 )
 abstract class SosDatabase : RoomDatabase() {

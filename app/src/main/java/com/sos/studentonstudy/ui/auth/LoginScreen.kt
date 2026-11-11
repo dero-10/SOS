@@ -85,7 +85,9 @@ fun LoginScreen(
         Spacer(Modifier.height(30.dp))
         SosButton("Login", viewModel::submit, loading = state.loading)
         AuthSwitch("Don't have an account?", "Register", onRegister)
-        Text("Demo account: demo@sos.com / password123", color = SosMuted, fontSize = 12.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
+        if (viewModel.showDemoHint) {
+            Text("Demo account: demo@sos.com / password123", color = SosMuted, fontSize = 12.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
+        }
     }
 }
 

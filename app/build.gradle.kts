@@ -1,9 +1,22 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("org.jetbrains.kotlin.plugin.serialization")
     id("com.google.devtools.ksp")
 }
+
+// Supabase project settings live in local.properties (not committed):
+//   supabase.url=https://<project-ref>.supabase.co
+//   supabase.anonKey=<publishable / anon key>
+// Leave them out to run the app fully offline on the local Room database.
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+fun localProperty(key: String): String = localProperties.getProperty(key, "").trim()
 
 android {
     namespace = "com.sos.studentonstudy"
@@ -15,6 +28,9 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField("String", "SUPABASE_URL", "\"${localProperty("supabase.url")}\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${localProperty("supabase.anonKey")}\"")
     }
 
     buildTypes {
@@ -29,6 +45,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -56,5 +73,13 @@ dependencies {
     implementation("androidx.room:room-runtime:2.7.2")
     implementation("androidx.room:room-ktx:2.7.2")
     ksp("androidx.room:room-compiler:2.7.2")
+    // Supabase 3.1.x matches Lifecycle 2.8.7 and compileSdk 34; 3.2+ needs Lifecycle 2.9 / compileSdk 35.
+    implementation(platform("io.github.jan-tennert.supabase:bom:3.1.4"))
+    implementation("io.github.jan-tennert.supabase:auth-kt")
+    implementation("io.github.jan-tennert.supabase:postgrest-kt")
+    implementation("io.github.jan-tennert.supabase:storage-kt")
+    implementation("io.ktor:ktor-client-okhttp:3.1.2")
+    // Loads request pictures from Supabase Storage URLs (Coil 2.x works with this Compose BOM).
+    implementation("io.coil-kt:coil-compose:2.7.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
 }

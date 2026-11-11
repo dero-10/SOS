@@ -36,6 +36,9 @@ data class LoginUiState(
 )
 
 class LoginViewModel(private val auth: AuthRepository) : ViewModel() {
+    /** The seeded demo account only exists in offline mode. */
+    val showDemoHint: Boolean = !auth.isOnline
+
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
@@ -55,7 +58,11 @@ class LoginViewModel(private val auth: AuthRepository) : ViewModel() {
             val formError = when (auth.login(state.email, state.password)) {
                 AuthResult.Success -> null
                 AuthResult.UnknownEmail -> "No account found for this email"
-                else -> "Incorrect password"
+                AuthResult.WrongPassword -> "Incorrect password"
+                AuthResult.InvalidCredentials -> "Incorrect email or password"
+                AuthResult.ConfirmEmail -> "Confirm your email first, then log in"
+                AuthResult.NetworkError -> "No internet connection. Check your network and try again"
+                else -> "Something went wrong on the server. Please try again"
             }
             _uiState.update { it.copy(loading = false, formError = formError, loggedIn = formError == null) }
         }
@@ -71,6 +78,7 @@ data class RegisterUiState(
     val emailError: String? = null,
     val passwordError: String? = null,
     val confirmError: String? = null,
+    val formError: String? = null,
     val loading: Boolean = false,
     val registered: Boolean = false
 )
@@ -79,8 +87,8 @@ class RegisterViewModel(private val auth: AuthRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(RegisterUiState())
     val uiState: StateFlow<RegisterUiState> = _uiState.asStateFlow()
 
-    fun onNameChange(value: String) = _uiState.update { it.copy(name = value, nameError = null) }
-    fun onEmailChange(value: String) = _uiState.update { it.copy(email = value, emailError = null) }
+    fun onNameChange(value: String) = _uiState.update { it.copy(name = value, nameError = null, formError = null) }
+    fun onEmailChange(value: String) = _uiState.update { it.copy(email = value, emailError = null, formError = null) }
     fun onPasswordChange(value: String) = _uiState.update { it.copy(password = value, passwordError = null) }
     fun onConfirmChange(value: String) = _uiState.update { it.copy(confirmPassword = value, confirmError = null) }
 
@@ -100,8 +108,15 @@ class RegisterViewModel(private val auth: AuthRepository) : ViewModel() {
         viewModelScope.launch {
             val result = auth.register(state.name, state.email, state.password)
             _uiState.update {
-                if (result == AuthResult.Success) it.copy(loading = false, registered = true)
-                else it.copy(loading = false, emailError = "This email is already registered")
+                when (result) {
+                    AuthResult.Success -> it.copy(loading = false, registered = true)
+                    AuthResult.EmailTaken -> it.copy(loading = false, emailError = "This email is already registered")
+                    AuthResult.ConfirmEmail ->
+                        it.copy(loading = false, formError = "Account created. Open the link we emailed you, then log in")
+                    AuthResult.NetworkError ->
+                        it.copy(loading = false, formError = "No internet connection. Check your network and try again")
+                    else -> it.copy(loading = false, formError = "Something went wrong on the server. Please try again")
+                }
             }
         }
     }
