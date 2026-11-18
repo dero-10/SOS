@@ -8,7 +8,7 @@
 | Darren Keith Kho / 01082240017 | deroow | Refactor interface repository, Fake repository, unit test Login/Register/ChatList/HelperProfile, UI test, CI | `FakeAuthRepository`, `FakeChatRepository`, `FakeHelperRepository`, `LoginViewModelTest`, `RegisterViewModelTest`, `ChatListViewModelTest`, `HelperProfileViewModelTest`, `LoginScreenTest`, `ChatListScreenTest` |
 | Ben Majesty Adrah Nesta / 01082240016 | (isi) | Test fungsi murni: format dan validasi | `FormatTest`, `ValidatorTest` |
 | Farrell Fyelo Hollans Tamaela / 01082240024 | (isi) | Test `ProfileViewModel` (+ interface `AppSettings`) | `ProfileViewModelTest` |
-| Michael Yulianto Tamba / 01082240012 | (isi) | Interface `RequestRepository`, `FakeRequestRepository`, test Explore/Dashboard | `ExploreViewModelTest`, `DashboardViewModelTest` |
+| Michael Yulianto Tamba / 01082240012 | michaelyulianto | Interface `RequestRepository`, `FakeRequestRepository`, test Explore/Dashboard | `FakeRequestRepository`, `ExploreViewModelTest`, `DashboardViewModelTest` |
 
 **Link repository:** https://github.com/dero-10/SOS
 **Jenis proyek:**
@@ -31,7 +31,9 @@ Hasil awal: ✔2 ⚠2 ✘14. Sesudah perbaikan: ✘0.
 | 5 | Screen yang diuji menerima ViewModel lewat parameter default | ✔ | | UI test memasang ViewModel berisi fake |
 | 6 | Icon/IconButton punya `contentDescription` | ✔ | | 17 `null` sudah diperiksa: semuanya ikon dekoratif di samping teks |
 
-Catatan: `RequestRepository`, `ReplyRepository` belum berinterface, jadi ViewModel yang memakainya (Explore, Dashboard, Recent, RequestForm/Detail) belum diuji.
+Catatan audit awal: `RequestRepository` dan `ReplyRepository` belum berinterface, sehingga ViewModel yang memakainya belum diuji saat audit ini ditulis.
+
+Pembaruan tugas Michael: `RequestRepository` sudah diekstrak menjadi interface dengan implementasi `RequestRepositoryImpl`. Fake dan test Explore/Dashboard ditambahkan; hasilnya menunggu verifikasi `testDebugUnitTest`.
 
 ## B. Daftar Unit yang Akan Diuji
 
