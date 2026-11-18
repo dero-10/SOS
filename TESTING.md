@@ -71,7 +71,7 @@ Total 15 test ViewModel (Login 5, Register 3, ChatList 4, HelperProfile 3) dan 4
 | UI test (Compose, emulator Pixel_8 API 35) | 4 | 4 | `./gradlew connectedDebugAndroidTest` |
 | Integration test (DAO) | 0 | – | belum dibuat |
 
-- Link run GitHub Actions yang hijau: (isi setelah CI selesai)
+- Link run GitHub Actions yang hijau: https://github.com/dero-10/SOS/actions/runs/44334677469
 - Bukti test bisa gagal: nilai harapan "Incorrect password" sempat diubah menjadi "MUTATED" → `LoginViewModelTest` merah (15 test, 1 gagal), lalu dikembalikan.
 
 ## E. Refleksi
