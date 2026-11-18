@@ -5,9 +5,10 @@
 
 | Anggota (Nama / NIM) | Username GitHub | Tugas testing | Berkas test yang ditulis |
 |----------------------|-----------------|---------------|--------------------------|
-| (isi) | deroow | Refactor interface repository, Fake repository, unit test Login/Register/ChatList/HelperProfile, UI test, CI | `FakeAuthRepository`, `FakeChatRepository`, `FakeHelperRepository`, `LoginViewModelTest`, `RegisterViewModelTest`, `ChatListViewModelTest`, `HelperProfileViewModelTest`, `LoginScreenTest`, `ChatListScreenTest` |
-| (isi) | (isi) | (isi: mis. test ViewModel lain atau Mapper/Validator) | (isi — minimal 1 commit test) |
-| (isi) | (isi) | (isi) | (isi — minimal 1 commit test) |
+| Darren Keith Kho / 01082240017 | deroow | Refactor interface repository, Fake repository, unit test Login/Register/ChatList/HelperProfile, UI test, CI | `FakeAuthRepository`, `FakeChatRepository`, `FakeHelperRepository`, `LoginViewModelTest`, `RegisterViewModelTest`, `ChatListViewModelTest`, `HelperProfileViewModelTest`, `LoginScreenTest`, `ChatListScreenTest` |
+| Ben Majesty Adrah Nesta / 01082240016 | (isi) | Test fungsi murni: format dan validasi | `FormatTest`, `ValidatorTest` |
+| Farrell Fyelo Hollans Tamaela / 01082240024 | (isi) | Test `ProfileViewModel` (+ interface `AppSettings`) | `ProfileViewModelTest` |
+| Michael Yulianto Tamba / 01082240012 | (isi) | Interface `RequestRepository`, `FakeRequestRepository`, test Explore/Dashboard | `ExploreViewModelTest`, `DashboardViewModelTest` |
 
 **Link repository:** https://github.com/dero-10/SOS
 **Jenis proyek:**
