@@ -64,7 +64,7 @@ Pembaruan tugas Farrell: `ProfileViewModel` memakai `AppSettings` yang membutuhk
 | 9 | Profile | Given saldo IDR 100,000 / When tarik 150000 / Then "You only have IDR 100,000", dialog tetap terbuka | Gagal | `withdrawing more than the balance shows an error` |
 | 10 | Profile | Given form belum dibuka / When ubah nama + simpan / Then form tetap kosong (null), tanpa pesan | Kosong | `form is empty until editing starts` |
 
-Total 15 test ViewModel (Login 5, Register 3, ChatList 4, HelperProfile 3) dan 4 UI test.
+Total 29 test ViewModel (Login 5, Register 3, Profile 7, ChatList 4, HelperProfile 3, Explore 4, Dashboard 3) dan 4 UI test.
 
 **Test double yang dipakai:**
 
