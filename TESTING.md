@@ -6,7 +6,7 @@
 | Anggota (Nama / NIM) | Username GitHub | Tugas testing | Berkas test yang ditulis |
 |----------------------|-----------------|---------------|--------------------------|
 | Darren Keith Kho / 01082240017 | deroow | Refactor interface repository, Fake repository, unit test Login/Register/ChatList/HelperProfile, UI test, CI | `FakeAuthRepository`, `FakeChatRepository`, `FakeHelperRepository`, `LoginViewModelTest`, `RegisterViewModelTest`, `ChatListViewModelTest`, `HelperProfileViewModelTest`, `LoginScreenTest`, `ChatListScreenTest` |
-| Ben Majesty Adrah Nesta / 01082240016 | (isi) | Test fungsi murni: format dan validasi | `FormatTest`, `ValidatorTest` |
+| Ben Majesty Adrah Nesta / 01082240016 | bspuluh | Test fungsi murni: format dan validasi | `FormatTest`, `ValidatorTest` |
 | Farrell Fyelo Hollans Tamaela / 01082240024 | RubahAnomali | Interface `AppSettings`, `FakeAppSettings`, test `ProfileViewModel` | `FakeAppSettings`, `ProfileViewModelTest` |
 | Michael Yulianto Tamba / 01082240012 | michaelyulianto | Interface `RequestRepository`, `FakeRequestRepository`, test Explore/Dashboard | `FakeRequestRepository`, `ExploreViewModelTest`, `DashboardViewModelTest` |
 
@@ -48,6 +48,8 @@ Pembaruan tugas Farrell: `ProfileViewModel` memakai `AppSettings` yang membutuhk
 | ViewModel | `ProfileViewModel` | `ui/profile/ProfileViewModel.kt` | 1 |
 | Screen (UI) | `LoginScreen` | `ui/auth/LoginScreen.kt` | 1 |
 | Screen (UI) | `ChatListScreen` | `ui/chat/ChatListScreen.kt` | 2 |
+| Fungsi murni | `formatIdr`, `formatTimeAgo`, `isUrgent` | `ui/Format.kt` | 2 |
+| Fungsi murni | `validateEmail`, `validatePassword` | `ui/auth/AuthViewModels.kt` | 1 |
 
 ## C. Matriks Skenario ViewModel
 
@@ -79,10 +81,11 @@ Total 29 test ViewModel (Login 5, Register 3, Profile 7, ChatList 4, HelperProfi
 
 | Jenis test | Jumlah | Lulus | Perintah |
 |------------|:------:|:-----:|----------|
-| Unit test (JVM) | 29 | 29 | `./gradlew testDebugUnitTest` |
+| Unit test (JVM) | 55 | 55 | `./gradlew testDebugUnitTest` |
 | UI test (Compose, emulator Pixel_8 API 35) | 4 | 4 | `./gradlew connectedDebugAndroidTest` |
 | Integration test (DAO) | 0 | – | belum dibuat |
 
+Bukti test bisa gagal pada test fungsi murni: formatIdr sempat diharapkan IDR 999,999 → FormatTest merah, lalu dikembalikan.
 - Link run GitHub Actions yang hijau: https://github.com/dero-10/SOS/actions/runs/44334677469
 - Bukti test bisa gagal: nilai harapan "Incorrect password" sempat diubah menjadi "MUTATED" → `LoginViewModelTest` merah (15 test, 1 gagal), lalu dikembalikan.
 - Bukti test bisa gagal (Profile): nilai harapan "You only have IDR 100,000" sempat diubah menjadi "MUTATED" → `testDebugUnitTest` merah (29 test, 1 gagal), lalu dikembalikan dan hijau lagi.
