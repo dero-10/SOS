@@ -7,7 +7,7 @@
 |----------------------|-----------------|---------------|--------------------------|
 | Darren Keith Kho / 01082240017 | deroow | Refactor interface repository, Fake repository, unit test Login/Register/ChatList/HelperProfile, UI test, CI | `FakeAuthRepository`, `FakeChatRepository`, `FakeHelperRepository`, `LoginViewModelTest`, `RegisterViewModelTest`, `ChatListViewModelTest`, `HelperProfileViewModelTest`, `LoginScreenTest`, `ChatListScreenTest` |
 | Ben Majesty Adrah Nesta / 01082240016 | (isi) | Test fungsi murni: format dan validasi | `FormatTest`, `ValidatorTest` |
-| Farrell Fyelo Hollans Tamaela / 01082240024 | (isi) | Test `ProfileViewModel` (+ interface `AppSettings`) | `ProfileViewModelTest` |
+| Farrell Fyelo Hollans Tamaela / 01082240024 | RubahAnomali | Interface `AppSettings`, `FakeAppSettings`, test `ProfileViewModel` | `FakeAppSettings`, `ProfileViewModelTest` |
 | Michael Yulianto Tamba / 01082240012 | michaelyulianto | Interface `RequestRepository`, `FakeRequestRepository`, test Explore/Dashboard | `FakeRequestRepository`, `ExploreViewModelTest`, `DashboardViewModelTest` |
 
 **Link repository:** https://github.com/dero-10/SOS
@@ -35,6 +35,8 @@ Catatan audit awal: `RequestRepository` dan `ReplyRepository` belum berinterface
 
 Pembaruan tugas Michael: `RequestRepository` sudah diekstrak menjadi interface dengan implementasi `RequestRepositoryImpl`. Fake dan test Explore/Dashboard ditambahkan; hasil `testDebugUnitTest`: 22 test lulus. Test Explore sempat merah karena ekspektasi urutan salah, lalu hijau setelah diperbaiki.
 
+Pembaruan tugas Farrell: `ProfileViewModel` memakai `AppSettings` yang membutuhkan `Context` (SharedPreferences). `AppSettings` diekstrak menjadi interface dengan implementasi `AppSettingsImpl` (commit "Extract AppSettings interface"), sehingga test memakai `FakeAppSettings` tanpa Context. Test ditambahkan di commit terpisah ("Add ProfileViewModel tests"); hasil `testDebugUnitTest`: 29 test lulus.
+
 ## B. Daftar Unit yang Akan Diuji
 
 | Jenis | Nama kelas / fungsi | Berkas | Prioritas (1–3) |
@@ -43,6 +45,7 @@ Pembaruan tugas Michael: `RequestRepository` sudah diekstrak menjadi interface d
 | ViewModel | `RegisterViewModel` | `ui/auth/AuthViewModels.kt` | 1 |
 | ViewModel | `ChatListViewModel` | `ui/chat/ChatListViewModel.kt` | 2 |
 | ViewModel | `HelperProfileViewModel` | `ui/helper/HelperProfileViewModel.kt` | 2 |
+| ViewModel | `ProfileViewModel` | `ui/profile/ProfileViewModel.kt` | 1 |
 | Screen (UI) | `LoginScreen` | `ui/auth/LoginScreen.kt` | 1 |
 | Screen (UI) | `ChatListScreen` | `ui/chat/ChatListScreen.kt` | 2 |
 
@@ -55,6 +58,11 @@ Pembaruan tugas Michael: `RequestRepository` sudah diekstrak menjadi interface d
 | 3 | ChatList | Given tidak ada percakapan / Then daftar kosong, `hasChats = false` | Kosong | `no conversations gives an empty list` |
 | 4 | ChatList | Given 2 percakapan / When cari "fai" / Then hanya Faith | Aksi pengguna | `search filters by helper name but keeps hasChats` |
 | 5 | Login | Given field kosong / When submit / Then error validasi, repository tidak dipanggil | Validasi | `empty fields are rejected without calling the repository` |
+| 6 | Profile | Given form edit terbuka dengan nama + LinkedIn valid / When simpan / Then form tertutup, pesan "Profile saved" | Sukses | `saving a valid profile closes the form and shows a message` |
+| 7 | Profile | Given nama hanya spasi / When simpan / Then "Name is required", form tetap terbuka | Validasi | `blank name is rejected and the form stays open` |
+| 8 | Profile | Given link github.com / When simpan / Then error link LinkedIn | Validasi | `non LinkedIn link is rejected` |
+| 9 | Profile | Given saldo IDR 100,000 / When tarik 150000 / Then "You only have IDR 100,000", dialog tetap terbuka | Gagal | `withdrawing more than the balance shows an error` |
+| 10 | Profile | Given form belum dibuka / When ubah nama + simpan / Then form tetap kosong (null), tanpa pesan | Kosong | `form is empty until editing starts` |
 
 Total 15 test ViewModel (Login 5, Register 3, ChatList 4, HelperProfile 3) dan 4 UI test.
 
@@ -65,17 +73,19 @@ Total 15 test ViewModel (Login 5, Register 3, ChatList 4, HelperProfile 3) dan 4
 | `AuthRepositoryImpl` (Room + Supabase) | `FakeAuthRepository` | fake | Hasil login/register dapat diatur, tanpa jaringan |
 | `ChatRepositoryImpl` (Room) | `FakeChatRepository` | fake | Daftar percakapan di memori |
 | `HelperRepositoryImpl` (Room) | `FakeHelperRepository` | fake | Data helper di memori |
+| `AppSettingsImpl` (SharedPreferences) | `FakeAppSettings` | fake | Dark mode / bahasa di memori, tanpa Context |
 
 ## D. Hasil
 
 | Jenis test | Jumlah | Lulus | Perintah |
 |------------|:------:|:-----:|----------|
-| Unit test (JVM) | 22 | 22 | `./gradlew testDebugUnitTest` |
+| Unit test (JVM) | 29 | 29 | `./gradlew testDebugUnitTest` |
 | UI test (Compose, emulator Pixel_8 API 35) | 4 | 4 | `./gradlew connectedDebugAndroidTest` |
 | Integration test (DAO) | 0 | – | belum dibuat |
 
 - Link run GitHub Actions yang hijau: https://github.com/dero-10/SOS/actions/runs/44334677469
 - Bukti test bisa gagal: nilai harapan "Incorrect password" sempat diubah menjadi "MUTATED" → `LoginViewModelTest` merah (15 test, 1 gagal), lalu dikembalikan.
+- Bukti test bisa gagal (Profile): nilai harapan "You only have IDR 100,000" sempat diubah menjadi "MUTATED" → `testDebugUnitTest` merah (29 test, 1 gagal), lalu dikembalikan dan hijau lagi.
 
 ## E. Refleksi
 
