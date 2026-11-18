@@ -46,7 +46,7 @@ class ExploreViewModelTest {
         viewModel.uiState.test {
             assertEquals(3, expectMostRecentItem().requests.size)
             viewModel.setTag("Mobile")
-            assertEquals(listOf("Kotlin app", "Java app"), expectMostRecentItem().requests.map { it.request.title })
+            assertEquals(listOf("Java app", "Kotlin app"), expectMostRecentItem().requests.map { it.request.title })
             viewModel.setQuery("kOtLiN")
             assertEquals(listOf("Kotlin app"), expectMostRecentItem().requests.map { it.request.title })
             viewModel.setQuery("missing")

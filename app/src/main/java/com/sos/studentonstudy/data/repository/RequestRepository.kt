@@ -174,7 +174,9 @@ class RequestRepositoryImpl(
     }
 
     /** Removes picture files that no request uses any more. */
-    override suspend fun sweepImages() = imageFiles.sweepOrphans()
+    override suspend fun sweepImages() {
+        imageFiles.sweepOrphans()
+    }
 
     // --- Offline ----------------------------------------------------------------------------
 

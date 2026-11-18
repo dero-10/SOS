@@ -33,7 +33,7 @@ Hasil awal: ✔2 ⚠2 ✘14. Sesudah perbaikan: ✘0.
 
 Catatan audit awal: `RequestRepository` dan `ReplyRepository` belum berinterface, sehingga ViewModel yang memakainya belum diuji saat audit ini ditulis.
 
-Pembaruan tugas Michael: `RequestRepository` sudah diekstrak menjadi interface dengan implementasi `RequestRepositoryImpl`. Fake dan test Explore/Dashboard ditambahkan; hasilnya menunggu verifikasi `testDebugUnitTest`.
+Pembaruan tugas Michael: `RequestRepository` sudah diekstrak menjadi interface dengan implementasi `RequestRepositoryImpl`. Fake dan test Explore/Dashboard ditambahkan; hasil `testDebugUnitTest`: 22 test lulus. Test Explore sempat merah karena ekspektasi urutan salah, lalu hijau setelah diperbaiki.
 
 ## B. Daftar Unit yang Akan Diuji
 
@@ -70,7 +70,7 @@ Total 15 test ViewModel (Login 5, Register 3, ChatList 4, HelperProfile 3) dan 4
 
 | Jenis test | Jumlah | Lulus | Perintah |
 |------------|:------:|:-----:|----------|
-| Unit test (JVM) | 15 | 15 | `./gradlew testDebugUnitTest` |
+| Unit test (JVM) | 22 | 22 | `./gradlew testDebugUnitTest` |
 | UI test (Compose, emulator Pixel_8 API 35) | 4 | 4 | `./gradlew connectedDebugAndroidTest` |
 | Integration test (DAO) | 0 | – | belum dibuat |
 
