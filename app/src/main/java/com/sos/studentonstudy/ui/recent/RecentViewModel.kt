@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import java.util.Calendar
+import java.util.GregorianCalendar
 
 enum class RecentKind { Posted, SentToHelper, Replied }
 
@@ -34,7 +35,9 @@ data class RecentUiState(
 class RecentViewModel(
     requests: RequestRepository,
     replies: ReplyRepository,
-    helpers: HelperRepository
+    helpers: HelperRepository,
+    /** Current time in millis; injectable so tests can pin "today". */
+    private val now: () -> Long = System::currentTimeMillis
 ) : ViewModel() {
     val uiState: StateFlow<RecentUiState> = combine(requests.myRequests, replies.myReplies, helpers.helpers) { mine, myReplies, helperList ->
         val helperNames = helperList.associate { it.id to it.name }
@@ -66,7 +69,8 @@ class RecentViewModel(
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), RecentUiState())
 
-    private fun startOfToday(): Long = Calendar.getInstance().apply {
+    private fun startOfToday(): Long = GregorianCalendar().apply {
+        timeInMillis = now()
         set(Calendar.HOUR_OF_DAY, 0)
         set(Calendar.MINUTE, 0)
         set(Calendar.SECOND, 0)
