@@ -44,6 +44,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+    sourceSets {
+        // Reuse the Fake repositories in the emulator UI tests.
+        getByName("androidTest").java.srcDir("src/test/java/com/sos/studentonstudy/testutil")
+    }
     testOptions {
         unitTests.isReturnDefaultValues = true
     }
@@ -95,6 +99,7 @@ dependencies {
     // Compose UI tests (emulator)
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test:runner:1.5.2")
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
     androidTestImplementation(platform("androidx.compose:compose-bom:2024.04.01"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
