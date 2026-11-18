@@ -1,5 +1,6 @@
 package com.sos.studentonstudy.ui.profile
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -15,9 +16,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import com.sos.studentonstudy.ui.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import com.sos.studentonstudy.data.AppLanguage
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sos.studentonstudy.ui.SosMuted
 import com.sos.studentonstudy.ui.SosPurple
+import com.sos.studentonstudy.ui.SosSurface
 import com.sos.studentonstudy.ui.SosText
 import com.sos.studentonstudy.ui.SosTextField
 import com.sos.studentonstudy.ui.TagChip
@@ -77,41 +80,52 @@ internal fun BalanceAmountDialog(
         },
         confirmButton = { TextButton(onClick = onConfirm) { Text(dialog.action.confirm, color = SosPurple, fontWeight = FontWeight.SemiBold) } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel", color = SosMuted) } },
-        containerColor = Color.White
+        containerColor = SosSurface
     )
 }
 
-/** Language and Display only have one real option each today; the others are listed as coming soon. */
+/** Language and Display pickers; the choice applies (and is saved) immediately. */
 @Composable
-internal fun SettingInfoDialog(setting: SettingDialog, onDismiss: () -> Unit) {
-    val (title, options) = when (setting) {
-        SettingDialog.Language -> "Language" to listOf("English" to true, "Bahasa Indonesia" to false)
-        SettingDialog.Display -> "Display" to listOf("Light mode" to true, "Dark mode" to false)
+internal fun SettingDialogContent(
+    setting: SettingDialog,
+    darkMode: Boolean,
+    language: AppLanguage,
+    onDarkMode: (Boolean) -> Unit,
+    onLanguage: (AppLanguage) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val title: String
+    val options: List<Triple<String, Boolean, () -> Unit>>
+    when (setting) {
+        SettingDialog.Language -> {
+            title = "Language"
+            options = AppLanguage.entries.map { Triple(it.label, it == language) { onLanguage(it) } }
+        }
+        SettingDialog.Display -> {
+            title = "Display"
+            options = listOf(
+                Triple("Light mode", !darkMode) { onDarkMode(false) },
+                Triple("Dark mode", darkMode) { onDarkMode(true) }
+            )
+        }
     }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title, fontWeight = FontWeight.Bold) },
         text = {
             Column {
-                options.forEach { (label, available) ->
-                    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            label,
-                            color = if (available) SosText else SosMuted,
-                            fontSize = 16.sp,
-                            modifier = Modifier.weight(1f)
-                        )
-                        if (available) {
-                            Icon(Icons.Filled.Check, contentDescription = "Selected", tint = SosPurple)
-                        } else {
-                            Text("Coming soon", color = SosMuted, fontSize = 12.sp)
-                            Spacer(Modifier.width(4.dp))
-                        }
+                options.forEach { (label, selected, onSelect) ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().clickable(onClick = onSelect).padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(label, color = SosText, fontSize = 16.sp, modifier = Modifier.weight(1f))
+                        if (selected) Icon(Icons.Filled.Check, contentDescription = "Selected", tint = SosPurple)
                     }
                 }
             }
         },
         confirmButton = { TextButton(onClick = onDismiss) { Text("Close", color = SosPurple, fontWeight = FontWeight.SemiBold) } },
-        containerColor = Color.White
+        containerColor = SosSurface
     )
 }

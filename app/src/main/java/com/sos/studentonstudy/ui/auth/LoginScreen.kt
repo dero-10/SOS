@@ -23,7 +23,7 @@ import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
+import com.sos.studentonstudy.ui.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -85,7 +85,9 @@ fun LoginScreen(
         Spacer(Modifier.height(30.dp))
         SosButton("Login", viewModel::submit, loading = state.loading)
         AuthSwitch("Don't have an account?", "Register", onRegister)
-        Text("Demo account: demo@sos.com / password123", color = SosMuted, fontSize = 12.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
+        if (viewModel.showDemoHint) {
+            Text("Demo account: demo@sos.com / password123", color = SosMuted, fontSize = 12.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
+        }
     }
 }
 

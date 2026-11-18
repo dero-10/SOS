@@ -14,8 +14,8 @@ import androidx.room.RoomDatabase
         ReplyEntity::class,
         ChatMessageEntity::class
     ],
-    version = 4,
-    exportSchema = false
+    version = 5,
+    exportSchema = true
 )
 abstract class SosDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -27,8 +27,10 @@ abstract class SosDatabase : RoomDatabase() {
     companion object {
         fun create(context: Context): SosDatabase =
             Room.databaseBuilder(context.applicationContext, SosDatabase::class.java, "sos.db")
-                // Pre-release app: rebuild instead of migrating when the schema changes.
-                .fallbackToDestructiveMigration(dropAllTables = true)
+                // Versions 1-3 were development builds without exported schemas, so they can't be migrated.
+                // From version 4 on every change needs a Migration (see Migrations.kt) so user data survives.
+                .fallbackToDestructiveMigrationFrom(dropAllTables = true, 1, 2, 3)
+                .addMigrations(*ALL_MIGRATIONS)
                 .build()
     }
 }

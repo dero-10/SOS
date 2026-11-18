@@ -2,6 +2,8 @@ package com.sos.studentonstudy.ui.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sos.studentonstudy.data.AppLanguage
+import com.sos.studentonstudy.data.AppSettings
 import com.sos.studentonstudy.data.local.UserEntity
 import com.sos.studentonstudy.data.repository.AuthRepository
 import com.sos.studentonstudy.ui.formatIdr
@@ -50,7 +52,12 @@ private data class LocalState(
     val settingDialog: SettingDialog? = null
 )
 
-class ProfileViewModel(private val auth: AuthRepository) : ViewModel() {
+class ProfileViewModel(private val auth: AuthRepository, private val settings: AppSettings) : ViewModel() {
+    val darkMode: StateFlow<Boolean> = settings.darkMode
+    val language: StateFlow<AppLanguage> = settings.language
+    fun setDarkMode(enabled: Boolean) = settings.setDarkMode(enabled)
+    fun setLanguage(value: AppLanguage) = settings.setLanguage(value)
+
     private val local = MutableStateFlow(LocalState())
 
     val uiState: StateFlow<ProfileUiState> = combine(auth.currentUser, local) { user, local ->
@@ -81,8 +88,11 @@ class ProfileViewModel(private val auth: AuthRepository) : ViewModel() {
         }
         viewModelScope.launch {
             val url = if (linkedin.isEmpty() || linkedin.startsWith("http", ignoreCase = true)) linkedin else "https://$linkedin"
-            auth.updateProfile(current.name, current.major, current.university, url)
-            local.update { it.copy(form = null, message = "Profile saved") }
+            val saved = auth.updateProfile(current.name, current.major, current.university, url)
+            local.update {
+                if (saved) it.copy(form = null, message = "Profile saved")
+                else it.copy(message = "Could not save your profile. Check your connection and try again")
+            }
         }
     }
 
@@ -116,7 +126,9 @@ class ProfileViewModel(private val auth: AuthRepository) : ViewModel() {
                     val text = if (dialog.action == BalanceAction.Withdraw) "${formatIdr(amount)} withdrawn" else "${formatIdr(amount)} added to your balance"
                     it.copy(balanceDialog = null, message = text)
                 } else {
-                    it.copy(balanceDialog = dialog.copy(error = "Balance changed, please try again"))
+                    val text = if (auth.isOnline) "Could not update your balance. Check your connection and try again"
+                    else "Balance changed, please try again"
+                    it.copy(balanceDialog = dialog.copy(error = text))
                 }
             }
         }

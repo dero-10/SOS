@@ -20,8 +20,15 @@ private const val LINKEDIN = "https://www.linkedin.com"
 /**
  * Fills an empty database with the demo account (demo@sos.com / password123), a community of other
  * students and helpers, replies and chats, so every Figma screen has realistic content on first launch.
+ *
+ * In [online] mode users and requests come from Supabase, so only the helpers are seeded
+ * (they move to the server in a later step).
  */
-suspend fun seedDatabase(db: SosDatabase) {
+suspend fun seedDatabase(db: SosDatabase, online: Boolean = false) {
+    if (online) {
+        if (db.helperDao().count() == 0) seedHelpers(db)
+        return
+    }
     if (db.userDao().count() > 0) return
     val now = System.currentTimeMillis()
 

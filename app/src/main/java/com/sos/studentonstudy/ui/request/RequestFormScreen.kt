@@ -38,7 +38,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
+import com.sos.studentonstudy.ui.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
@@ -248,9 +248,13 @@ fun RequestFormScreen(
             state.budgetError?.let { FieldError(it) }
             Spacer(Modifier.height(24.dp))
         }
+        state.formError?.let {
+            Box(Modifier.fillMaxWidth().padding(horizontal = 40.dp)) { FieldError(it) }
+        }
         SosButton(
             text = if (state.isEdit) "Save" else "Send",
             onClick = viewModel::save,
+            loading = state.saving,
             modifier = Modifier.padding(horizontal = 40.dp, vertical = 20.dp)
         )
     }

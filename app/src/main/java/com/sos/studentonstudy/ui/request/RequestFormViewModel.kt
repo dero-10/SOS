@@ -44,6 +44,10 @@ data class RequestFormUiState(
     val budgetError: String? = null,
     val confirmDelete: Boolean = false,
     val loading: Boolean = false,
+    /** True while a save or delete is being sent, so the button can't be tapped twice. */
+    val saving: Boolean = false,
+    /** Shown above the button when the server could not be reached. */
+    val formError: String? = null,
     val finished: Boolean = false,
     /** Set once a direct request was sent, so the screen can open that helper's chat. */
     val sentToHelperId: Long? = null
@@ -120,6 +124,7 @@ class RequestFormViewModel(
 
     fun save() {
         val state = _uiState.value
+        if (state.saving) return
         viewModelScope.launch {
             val balance = auth.currentUser.first()?.balance ?: 0L
             val titleError = when {
@@ -159,18 +164,25 @@ class RequestFormViewModel(
                 chat.sendRequest(helperId, request)
                 _uiState.update { it.copy(sentToHelperId = helperId) }
             } else {
-                repository.save(request)
-                _uiState.update { it.copy(finished = true) }
+                _uiState.update { it.copy(saving = true, formError = null) }
+                val saved = repository.save(request)
+                _uiState.update {
+                    if (saved) it.copy(saving = false, finished = true)
+                    else it.copy(saving = false, formError = SAVE_FAILED)
+                }
             }
         }
     }
 
     fun confirmDelete() {
         val request = original ?: return
-        _uiState.update { it.copy(confirmDelete = false) }
+        _uiState.update { it.copy(confirmDelete = false, saving = true, formError = null) }
         viewModelScope.launch {
-            repository.delete(request)
-            _uiState.update { it.copy(finished = true) }
+            val deleted = repository.delete(request)
+            _uiState.update {
+                if (deleted) it.copy(saving = false, finished = true)
+                else it.copy(saving = false, formError = DELETE_FAILED)
+            }
         }
     }
 
@@ -184,5 +196,7 @@ class RequestFormViewModel(
         private const val TITLE_MAX = 60
         private val WHITESPACE = Regex("\\s+")
         private const val DETAILS_MAX = 500
+        private const val SAVE_FAILED = "Could not save your request. Check your connection and try again"
+        private const val DELETE_FAILED = "Could not delete your request. Check your connection and try again"
     }
 }

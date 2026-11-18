@@ -15,6 +15,9 @@ import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,6 +26,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -31,7 +35,7 @@ import java.util.UUID
 
 /** Copies picked request images into app-private storage so they stay readable after the picker's grant ends. */
 internal object ImageStore {
-    private const val DIRECTORY = "request_images"
+    private const val DIRECTORY = com.sos.studentonstudy.data.RequestImageFiles.DIRECTORY
     private const val MAX_BYTES = 8L * 1024 * 1024
     private const val MAX_EDGE = 1024
 
@@ -65,18 +69,31 @@ internal object ImageStore {
     }
 }
 
-/** The request's picture, or the gray placeholder from Figma when it has none (or it can't be read). */
+/**
+ * The request's picture, or the gray placeholder from Figma when it has none (or it can't be read).
+ * [path] is a file in app storage (offline, or a picture just picked) or a Supabase Storage URL (online).
+ */
 @Composable
 internal fun RequestImage(path: String?, modifier: Modifier = Modifier) {
+    val isRemote = path != null && (path.startsWith("https://") || path.startsWith("http://"))
     val bitmap by produceState<ImageBitmap?>(initialValue = null, key1 = path) {
-        value = path?.let { withContext(Dispatchers.IO) { ImageStore.decode(it)?.asImageBitmap() } }
+        value = if (path == null || isRemote) null else withContext(Dispatchers.IO) { ImageStore.decode(path)?.asImageBitmap() }
     }
+    var remoteFailed by remember(path) { mutableStateOf(false) }
     Box(modifier = modifier.background(Color(0xFFE0E0E0)), contentAlignment = Alignment.Center) {
         val image = bitmap
-        if (image != null) {
-            Image(image, contentDescription = "Request image", contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-        } else {
-            Icon(Icons.Outlined.Image, contentDescription = null, tint = Color(0xFF1F1F1F), modifier = Modifier.size(150.dp))
+        when {
+            isRemote && !remoteFailed -> AsyncImage(
+                model = path,
+                contentDescription = "Request image",
+                contentScale = ContentScale.Crop,
+                onError = { remoteFailed = true },
+                modifier = Modifier.fillMaxSize()
+            )
+            image != null ->
+                Image(image, contentDescription = "Request image", contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+            else ->
+                Icon(Icons.Outlined.Image, contentDescription = null, tint = Color(0xFF1F1F1F), modifier = Modifier.size(150.dp))
         }
     }
 }
