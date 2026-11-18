@@ -15,20 +15,28 @@ enum class AppLanguage(val code: String, val label: String) {
     }
 }
 
-/** Display preferences (dark mode, language), kept in SharedPreferences and exposed as flows. */
-class AppSettings(context: Context) {
+/** Display preferences (dark mode, language) exposed as flows. */
+interface AppSettings {
+    val darkMode: StateFlow<Boolean>
+    val language: StateFlow<AppLanguage>
+    fun setDarkMode(enabled: Boolean)
+    fun setLanguage(language: AppLanguage)
+}
+
+/** [AppSettings] kept in SharedPreferences. */
+class AppSettingsImpl(context: Context) : AppSettings {
     private val prefs = context.getSharedPreferences("sos_settings", Context.MODE_PRIVATE)
     private val _darkMode = MutableStateFlow(prefs.getBoolean(KEY_DARK, false))
     private val _language = MutableStateFlow(AppLanguage.fromCode(prefs.getString(KEY_LANGUAGE, null)))
-    val darkMode: StateFlow<Boolean> = _darkMode.asStateFlow()
-    val language: StateFlow<AppLanguage> = _language.asStateFlow()
+    override val darkMode: StateFlow<Boolean> = _darkMode.asStateFlow()
+    override val language: StateFlow<AppLanguage> = _language.asStateFlow()
 
-    fun setDarkMode(enabled: Boolean) {
+    override fun setDarkMode(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_DARK, enabled).apply()
         _darkMode.value = enabled
     }
 
-    fun setLanguage(language: AppLanguage) {
+    override fun setLanguage(language: AppLanguage) {
         prefs.edit().putString(KEY_LANGUAGE, language.code).apply()
         _language.value = language
     }

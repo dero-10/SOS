@@ -3,6 +3,7 @@ package com.sos.studentonstudy
 import android.app.Application
 import android.content.Context
 import com.sos.studentonstudy.data.AppSettings
+import com.sos.studentonstudy.data.AppSettingsImpl
 import com.sos.studentonstudy.data.RequestImageFiles
 import com.sos.studentonstudy.data.SessionManager
 import com.sos.studentonstudy.data.seedDatabase
@@ -37,7 +38,7 @@ class AppContainer(context: Context) {
     private val session = SessionManager(context)
     /** Null when local.properties has no Supabase keys: the app then runs offline only. */
     private val supabase = SupabaseProvider.createOrNull()
-    val settings = AppSettings(context)
+    val settings: AppSettings = AppSettingsImpl(context)
     val authRepository = AuthRepositoryImpl(database.userDao(), session, supabase, appScope)
     val requestRepository = RequestRepositoryImpl(
         database.requestDao(), database.userDao(), session, RequestImageFiles(context, database.requestDao()), supabase
