@@ -8,9 +8,9 @@ import com.sos.studentonstudy.data.SessionManager
 import com.sos.studentonstudy.data.seedDatabase
 import com.sos.studentonstudy.data.local.SosDatabase
 import com.sos.studentonstudy.data.remote.SupabaseProvider
-import com.sos.studentonstudy.data.repository.AuthRepository
-import com.sos.studentonstudy.data.repository.ChatRepository
-import com.sos.studentonstudy.data.repository.HelperRepository
+import com.sos.studentonstudy.data.repository.AuthRepositoryImpl
+import com.sos.studentonstudy.data.repository.ChatRepositoryImpl
+import com.sos.studentonstudy.data.repository.HelperRepositoryImpl
 import com.sos.studentonstudy.data.repository.ReplyRepository
 import com.sos.studentonstudy.data.repository.RequestRepository
 import kotlinx.coroutines.CoroutineScope
@@ -38,13 +38,13 @@ class AppContainer(context: Context) {
     /** Null when local.properties has no Supabase keys: the app then runs offline only. */
     private val supabase = SupabaseProvider.createOrNull()
     val settings = AppSettings(context)
-    val authRepository = AuthRepository(database.userDao(), session, supabase, appScope)
+    val authRepository = AuthRepositoryImpl(database.userDao(), session, supabase, appScope)
     val requestRepository = RequestRepository(
         database.requestDao(), database.userDao(), session, RequestImageFiles(context, database.requestDao()), supabase
     )
-    val helperRepository = HelperRepository(database.helperDao())
+    val helperRepository = HelperRepositoryImpl(database.helperDao())
     val replyRepository = ReplyRepository(database.replyDao(), session)
-    val chatRepository = ChatRepository(database.chatDao(), database.requestDao(), session)
+    val chatRepository = ChatRepositoryImpl(database.chatDao(), database.requestDao(), session)
 
     init {
         appScope.launch {

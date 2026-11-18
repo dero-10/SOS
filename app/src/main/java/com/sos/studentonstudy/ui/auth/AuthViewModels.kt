@@ -1,6 +1,5 @@
 package com.sos.studentonstudy.ui.auth
 
-import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sos.studentonstudy.data.repository.AuthRepository
@@ -13,9 +12,12 @@ import kotlinx.coroutines.launch
 
 internal const val MIN_PASSWORD_LENGTH = 6
 
+/** Same shape Android's Patterns.EMAIL_ADDRESS accepts, without needing the Android framework (so it runs in JVM tests). */
+private val EMAIL_REGEX = Regex("[a-zA-Z0-9+._%-]{1,256}@[a-zA-Z0-9][a-zA-Z0-9-]{0,64}([.][a-zA-Z0-9][a-zA-Z0-9-]{0,25})+")
+
 internal fun validateEmail(email: String): String? = when {
     email.isBlank() -> "Email is required"
-    !Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches() -> "Enter a valid email address"
+    !EMAIL_REGEX.matches(email.trim()) -> "Enter a valid email address"
     else -> null
 }
 

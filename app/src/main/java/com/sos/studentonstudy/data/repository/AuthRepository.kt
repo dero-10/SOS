@@ -41,6 +41,20 @@ enum class AuthResult {
     ServerError
 }
 
+/** What the screens and ViewModels need from the account layer; lets tests swap in a fake. */
+interface AuthRepository {
+    val isOnline: Boolean
+    val isLoggedIn: Boolean
+    val currentUser: Flow<UserEntity?>
+    suspend fun login(email: String, password: String): AuthResult
+    suspend fun register(name: String, email: String, password: String): AuthResult
+    suspend fun updateProfile(name: String, major: String, university: String, linkedinUrl: String): Boolean
+    suspend fun topUp(amount: Long): Boolean
+    suspend fun withdraw(amount: Long): Boolean
+    suspend fun syncSession()
+    fun logout()
+}
+
 /**
  * Accounts and the logged-in profile.
  *
@@ -49,21 +63,21 @@ enum class AuthResult {
  * Without one, everything stays local as before (SHA-256 hash in Room).
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-class AuthRepository(
+class AuthRepositoryImpl(
     private val userDao: UserDao,
     private val session: SessionManager,
     private val remote: SupabaseClient?,
     private val appScope: CoroutineScope
-) {
-    val isOnline: Boolean get() = remote != null
+) : AuthRepository {
+    override val isOnline: Boolean get() = remote != null
 
-    val isLoggedIn: Boolean get() = session.userId.value != null
+    override val isLoggedIn: Boolean get() = session.userId.value != null
 
-    val currentUser: Flow<UserEntity?> = session.userId.flatMapLatest { id ->
+    override val currentUser: Flow<UserEntity?> = session.userId.flatMapLatest { id ->
         if (id == null) flowOf(null) else userDao.observe(id)
     }
 
-    suspend fun login(email: String, password: String): AuthResult {
+    override suspend fun login(email: String, password: String): AuthResult {
         val client = remote ?: return loginLocal(email, password)
         return remoteCall {
             client.auth.signInWith(Email) {
@@ -74,7 +88,7 @@ class AuthRepository(
         }
     }
 
-    suspend fun register(name: String, email: String, password: String): AuthResult {
+    override suspend fun register(name: String, email: String, password: String): AuthResult {
         val client = remote ?: return registerLocal(name, email, password)
         return remoteCall {
             client.auth.signUpWith(Email) {
@@ -89,7 +103,7 @@ class AuthRepository(
     }
 
     /** Returns false when the change could not be saved (offline or server error). */
-    suspend fun updateProfile(name: String, major: String, university: String, linkedinUrl: String): Boolean {
+    override suspend fun updateProfile(name: String, major: String, university: String, linkedinUrl: String): Boolean {
         val id = session.userId.value ?: return false
         val client = remote
         if (client != null) {
@@ -106,10 +120,10 @@ class AuthRepository(
     }
 
     /** Adds credits to the balance (simulated purchase, there is no payment gateway yet). */
-    suspend fun topUp(amount: Long): Boolean = adjustBalance(amount)
+    override suspend fun topUp(amount: Long): Boolean = adjustBalance(amount)
 
     /** Removes [amount] from the balance; false when the balance is too low. */
-    suspend fun withdraw(amount: Long): Boolean = adjustBalance(-amount)
+    override suspend fun withdraw(amount: Long): Boolean = adjustBalance(-amount)
 
     private suspend fun adjustBalance(delta: Long): Boolean {
         val id = session.userId.value ?: return false
@@ -127,7 +141,7 @@ class AuthRepository(
      * Called once at app start. Drops the local session when the Supabase session is gone
      * (expired refresh token, signed out elsewhere) and refreshes the cached profile otherwise.
      */
-    suspend fun syncSession() {
+    override suspend fun syncSession() {
         val client = remote ?: return
         val id = session.userId.value ?: return
         client.auth.awaitInitialization()
@@ -139,7 +153,7 @@ class AuthRepository(
             .onFailure { Log.w(TAG, "Profile refresh failed for user $id, keeping the cached copy", it) }
     }
 
-    fun logout() {
+    override fun logout() {
         session.clear()
         val client = remote ?: return
         appScope.launch {
