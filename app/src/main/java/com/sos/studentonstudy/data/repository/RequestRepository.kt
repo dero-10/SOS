@@ -35,6 +35,19 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
 
+/** Contract used by request screens and ViewModels; tests can supply in-memory requests. */
+interface RequestRepository {
+    val feed: Flow<List<RequestWithMeta>>
+    val myRequests: Flow<List<RequestWithMeta>>
+    val currentUserId: Long?
+    fun observe(id: Long): Flow<RequestWithMeta?>
+    suspend fun get(id: Long): RequestEntity?
+    suspend fun refresh(): Boolean
+    suspend fun save(request: RequestEntity): Boolean
+    suspend fun delete(request: RequestEntity): Boolean
+    suspend fun sweepImages()
+}
+
 /**
  * Help requests: the logged-in user's own (CRUD) and the public feed from everyone.
  *
@@ -43,35 +56,35 @@ import java.util.UUID
  * which is what the screens observe. Without one, everything stays in Room as before.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-class RequestRepository(
+class RequestRepositoryImpl(
     private val requestDao: RequestDao,
     private val userDao: UserDao,
     private val session: SessionManager,
     private val imageFiles: RequestImageFiles,
     private val remote: SupabaseClient?
-) {
+) : RequestRepository {
     private val online = remote != null
     private val refreshLock = Mutex()
 
     /** Every public request, newest first; what Explore → Request shows. */
-    val feed: Flow<List<RequestWithMeta>> = requestDao.observeFeed(online)
+    override val feed: Flow<List<RequestWithMeta>> = requestDao.observeFeed(online)
 
     /** Requests the logged-in user created, including ones sent privately to a helper. */
-    val myRequests: Flow<List<RequestWithMeta>> = session.userId.flatMapLatest { id ->
+    override val myRequests: Flow<List<RequestWithMeta>> = session.userId.flatMapLatest { id ->
         if (id == null) flowOf(emptyList()) else requestDao.observeOwnWithMeta(id, online)
     }
 
-    val currentUserId: Long? get() = session.userId.value
+    override val currentUserId: Long? get() = session.userId.value
 
-    fun observe(id: Long): Flow<RequestWithMeta?> = requestDao.observeWithMeta(id)
+    override fun observe(id: Long): Flow<RequestWithMeta?> = requestDao.observeWithMeta(id)
 
-    suspend fun get(id: Long): RequestEntity? = requestDao.getById(id)
+    override suspend fun get(id: Long): RequestEntity? = requestDao.getById(id)
 
     /**
      * Pulls the newest public requests and all of the user's own requests from Supabase into Room,
      * and drops cached rows that were deleted on the server. Returns false when offline or on error.
      */
-    suspend fun refresh(): Boolean {
+    override suspend fun refresh(): Boolean {
         val client = remote ?: return true
         client.auth.awaitInitialization()
         val uid = client.auth.currentUserOrNull()?.id ?: return false
@@ -100,7 +113,7 @@ class RequestRepository(
     }
 
     /** Creates or updates [request]. Returns false when it could not be saved (no connection, server error). */
-    suspend fun save(request: RequestEntity): Boolean {
+    override suspend fun save(request: RequestEntity): Boolean {
         val userId = session.userId.value ?: return false
         val client = remote
         val original = if (request.id == 0L) null else requestDao.getById(request.id)
@@ -145,7 +158,7 @@ class RequestRepository(
     }
 
     /** Deletes [request]. Returns false when the server copy could not be deleted. */
-    suspend fun delete(request: RequestEntity): Boolean {
+    override suspend fun delete(request: RequestEntity): Boolean {
         val client = remote
         val remoteId = request.remoteId
         if (client != null && remoteId != null) {
@@ -161,7 +174,7 @@ class RequestRepository(
     }
 
     /** Removes picture files that no request uses any more. */
-    suspend fun sweepImages() = imageFiles.sweepOrphans()
+    override suspend fun sweepImages() = imageFiles.sweepOrphans()
 
     // --- Offline ----------------------------------------------------------------------------
 

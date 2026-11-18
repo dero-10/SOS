@@ -12,7 +12,7 @@ import com.sos.studentonstudy.data.repository.AuthRepositoryImpl
 import com.sos.studentonstudy.data.repository.ChatRepositoryImpl
 import com.sos.studentonstudy.data.repository.HelperRepositoryImpl
 import com.sos.studentonstudy.data.repository.ReplyRepository
-import com.sos.studentonstudy.data.repository.RequestRepository
+import com.sos.studentonstudy.data.repository.RequestRepositoryImpl
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -39,7 +39,7 @@ class AppContainer(context: Context) {
     private val supabase = SupabaseProvider.createOrNull()
     val settings = AppSettings(context)
     val authRepository = AuthRepositoryImpl(database.userDao(), session, supabase, appScope)
-    val requestRepository = RequestRepository(
+    val requestRepository = RequestRepositoryImpl(
         database.requestDao(), database.userDao(), session, RequestImageFiles(context, database.requestDao()), supabase
     )
     val helperRepository = HelperRepositoryImpl(database.helperDao())
