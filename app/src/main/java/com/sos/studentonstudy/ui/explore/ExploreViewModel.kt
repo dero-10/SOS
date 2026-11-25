@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.stateIn
 
 enum class ExploreTab(val label: String) { Request("Request"), Helper("Helper") }
@@ -40,6 +41,11 @@ private data class ExploreFilters(
 )
 
 class ExploreViewModel(requestRepository: RequestRepository, helperRepository: HelperRepository) : ViewModel() {
+    init {
+        // Online: fetch the latest feed each time Explore opens (no-op offline).
+        viewModelScope.launch { requestRepository.refresh() }
+    }
+
     private val tab = MutableStateFlow(ExploreTab.Request)
     private val query = MutableStateFlow("")
     private val tag = MutableStateFlow<String?>(null)

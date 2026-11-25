@@ -6,10 +6,16 @@ import com.sos.studentonstudy.data.local.HelperEntity
 import kotlinx.coroutines.flow.Flow
 
 /** Helpers shown in Explore → Helper and on helper profiles. */
-class HelperRepository(private val helperDao: HelperDao) {
-    val helpers: Flow<List<HelperEntity>> = helperDao.observeAll()
+interface HelperRepository {
+    val helpers: Flow<List<HelperEntity>>
+    fun helper(id: Long): Flow<HelperEntity?>
+    fun recentHelps(helperId: Long): Flow<List<HelpHistoryEntity>>
+}
 
-    fun helper(id: Long): Flow<HelperEntity?> = helperDao.observe(id)
+class HelperRepositoryImpl(private val helperDao: HelperDao) : HelperRepository {
+    override val helpers: Flow<List<HelperEntity>> = helperDao.observeAll()
 
-    fun recentHelps(helperId: Long): Flow<List<HelpHistoryEntity>> = helperDao.observeHistory(helperId)
+    override fun helper(id: Long): Flow<HelperEntity?> = helperDao.observe(id)
+
+    override fun recentHelps(helperId: Long): Flow<List<HelpHistoryEntity>> = helperDao.observeHistory(helperId)
 }

@@ -39,7 +39,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import com.sos.studentonstudy.ui.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -167,14 +167,14 @@ internal fun SosSearchBar(value: String, onValueChange: (String) -> Unit, modifi
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(40.dp)
-                    .border(1.dp, Color(0xFFBDBDBD), RoundedCornerShape(12.dp))
+                    .border(1.dp, SosStroke, RoundedCornerShape(12.dp))
                     .padding(horizontal = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Rounded.Search, contentDescription = null, tint = Color(0xFF9E9E9E), modifier = Modifier.size(18.dp))
+                Icon(Icons.Rounded.Search, contentDescription = null, tint = SosMuted, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
                 Box(Modifier.weight(1f)) {
-                    if (value.isEmpty()) Text(placeholder, color = Color(0xFFBDBDBD), fontSize = 14.sp)
+                    if (value.isEmpty()) Text(placeholder, color = SosMuted, fontSize = 14.sp)
                     inner()
                 }
                 if (value.isNotEmpty()) {
@@ -250,7 +250,7 @@ internal fun PersonAvatar(size: Dp, modifier: Modifier = Modifier) {
 /** Black shield with a check, shown next to verified helper names. */
 @Composable
 internal fun VerifiedBadge(modifier: Modifier = Modifier, size: Dp = 16.dp) {
-    Icon(Icons.Filled.VerifiedUser, contentDescription = "Verified", tint = Color.Black, modifier = modifier.size(size))
+    Icon(Icons.Filled.VerifiedUser, contentDescription = "Verified", tint = SosText, modifier = modifier.size(size))
 }
 
 /** File chip (PDF icon + name) shown for attachments in requests, replies and chat bubbles. */
@@ -312,19 +312,19 @@ internal fun MessageField(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(40.dp)
-                        .background(Color(0xFFCCCCCC), RoundedCornerShape(20.dp))
-                        .border(1.dp, Color(0xFF757575), RoundedCornerShape(20.dp))
+                        .background(SosField, RoundedCornerShape(20.dp))
+                        .border(1.dp, SosStroke, RoundedCornerShape(20.dp))
                         .padding(horizontal = 14.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(Modifier.weight(1f)) {
-                        if (value.isEmpty()) Text(placeholder, color = Color(0xFF777777), fontSize = 15.sp)
+                        if (value.isEmpty()) Text(placeholder, color = SosMuted, fontSize = 15.sp)
                         inner()
                     }
                     Icon(
                         Icons.Outlined.AttachFile,
                         contentDescription = "Attach file",
-                        tint = Color(0xFF666666),
+                        tint = SosMuted,
                         modifier = Modifier.size(20.dp).clickable(onClick = onAttach)
                     )
                 }
@@ -345,8 +345,8 @@ internal fun MessageField(
 /** Stand-in for the LinkedIn logo (not part of the Material icon set). */
 @Composable
 internal fun LinkedInBadge(modifier: Modifier = Modifier, size: Dp = 20.dp) {
-    Box(modifier = modifier.size(size).background(Color.Black, RoundedCornerShape(size * 0.18f)), contentAlignment = Alignment.Center) {
-        Text("in", color = Color.White, fontSize = (size.value * 0.6f).sp, fontWeight = FontWeight.ExtraBold)
+    Box(modifier = modifier.size(size).background(SosText, RoundedCornerShape(size * 0.18f)), contentAlignment = Alignment.Center) {
+        Text("in", color = SosBackground, fontSize = (size.value * 0.6f).sp, fontWeight = FontWeight.ExtraBold)
     }
 }
 
@@ -377,7 +377,7 @@ internal fun ConfirmDialog(title: String, message: String, confirmText: String, 
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Cancel", color = SosMuted) }
         },
-        containerColor = Color.White
+        containerColor = SosSurface
     )
 }
 
@@ -404,7 +404,7 @@ internal fun EmptyState(title: String, subtitle: String, modifier: Modifier = Mo
 @Composable
 internal fun SosBottomBar(content: @Composable RowScope.() -> Unit) {
     Column(modifier = Modifier.fillMaxWidth().background(SosBackground)) {
-        HorizontalDivider(color = Color(0xFFE6E6E6))
+        HorizontalDivider(color = SosStroke)
         Row(
             modifier = Modifier.fillMaxWidth().height(72.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,

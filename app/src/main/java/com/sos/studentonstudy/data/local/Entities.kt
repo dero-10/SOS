@@ -5,7 +5,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "users", indices = [Index(value = ["email"], unique = true)])
+@Entity(tableName = "users", indices = [Index(value = ["email"], unique = true), Index(value = ["remoteId"], unique = true)])
 data class UserEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
@@ -14,7 +14,9 @@ data class UserEntity(
     val major: String = "",
     val university: String = "",
     val linkedinUrl: String = "",
-    val balance: Long = STARTING_BALANCE
+    val balance: Long = STARTING_BALANCE,
+    /** Supabase auth user id (uuid) when this row caches an online account; null for offline-only accounts. */
+    val remoteId: String? = null
 ) {
     companion object {
         const val STARTING_BALANCE = 250_000L
@@ -38,7 +40,7 @@ data class UserEntity(
             onDelete = ForeignKey.SET_NULL
         )
     ],
-    indices = [Index("userId"), Index("helperId")]
+    indices = [Index("userId"), Index("helperId"), Index(value = ["remoteId"], unique = true)]
 )
 data class RequestEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
@@ -56,7 +58,9 @@ data class RequestEntity(
     val imagePath: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
     /** Set when the request was sent privately to one helper via chat; such requests stay out of the Explore feed. */
-    val helperId: Long? = null
+    val helperId: Long? = null,
+    /** `requests.id` on Supabase when this row mirrors a server request; null for local-only rows. */
+    val remoteId: Long? = null
 )
 
 fun RequestEntity.tagList(): List<String> = tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }

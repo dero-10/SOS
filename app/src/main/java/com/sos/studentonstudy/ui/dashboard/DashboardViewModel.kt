@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 data class DashboardUiState(
     val name: String = "",
@@ -23,6 +24,10 @@ data class DashboardUiState(
 )
 
 class DashboardViewModel(auth: AuthRepository, requests: RequestRepository) : ViewModel() {
+    init {
+        viewModelScope.launch { requests.refresh() }
+    }
+
     val uiState: StateFlow<DashboardUiState> = combine(auth.currentUser, requests.myRequests) { user, list ->
         val weekEnd = daysFromToday(7)
         DashboardUiState(
