@@ -213,6 +213,18 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------------
+-- Table-level privileges. New Supabase projects no longer grant these
+-- automatically, and RLS policies are only evaluated after the table grant.
+-- ---------------------------------------------------------------------------
+grant select on public.profiles     to authenticated;
+grant select on public.helper_stats to authenticated;
+
+grant select, insert, update, delete on public.requests to authenticated;
+grant select, insert, delete         on public.replies  to authenticated;
+grant select, insert                 on public.messages to authenticated;
+grant select, insert                 on public.reviews  to authenticated;
+
+-- ---------------------------------------------------------------------------
 -- Storage: request pictures. Files are stored as <user id>/<file name>.
 -- ---------------------------------------------------------------------------
 insert into storage.buckets (id, name, public)
